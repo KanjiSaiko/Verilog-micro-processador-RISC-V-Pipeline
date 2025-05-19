@@ -52,13 +52,14 @@ endtask
 reg [7:0] PC; //Contador
 reg desvio; //Controle para indicar se deve ocorrer um salto (branch).
 reg equal; //Sinal para verificar se R0 e igual a R1 (usado em instruçoes de comparaçao).
+reg [7:0] ulaEX_MEM;
 reg [7:0] R0ID_EX, R1ID_EX;
 reg [7:0] RwID_EX, RwEX_MEM, RwMEM_WB; //Registrador a ser escrito
 reg [7:0] PCIF_ID, PCID_EX, PCEX_MEM, PCMEM_WB //Contador de programa (Program Counter) que armazena o endereço atual de execuçao.
 reg [15:0] InIF_ID, InID_EX, InEX_MEM, InMEM_WB //Instrucao Atual de cada estagio
 
 
-initial begin //executa de uma vez só
+initial begin //Executa de uma vez só
     zera_memdados(mem_dados);
     zera_meminstruc(mem_instruc);
     zera_regs(banco_regs);
@@ -66,7 +67,7 @@ initial begin //executa de uma vez só
     atribui_dados(mem_dados);
 end
 
-always @(*) begin
+always @(*) begin //Lógica Combinacional
     //Verifica se R0 e R1 tem valores iguais
     if (R0ID_EX == RwEX_MEM)
         equal <= 1;
@@ -81,12 +82,122 @@ always @(*) begin
 end
 
 
-always @(posedge clock, posedge reset) //sensivel ao clock
+always @(posedge clock, posedge reset) //Lógica Sequencial
 begin
     if(reset)
+        PC <= 0;
+        PCIF_ID <= 0;
+        PCID_EX <= 0;
+        PCEX_MEM <= 0;
+        PCMEM_WB <= 0;
+
+        InIF_ID <= 16'b0;
+        InID_EX <= 16'b0;
+        InEX_MEM <= 16'b0;
+        InMEM_WB <= 16'b0;
+
+        ulaEX_MEM <= 8'b0;
+
+        R0ID_EX <= 8'b0;
+        R1ID_EX <= 8'b0;
+        RwID_EX <= 8'b0;
+        RwEX_MEM <= 8'b0;
+        RwMEM_WB <= 8'b0;
+
         //bloco
     else
-        //bloco 
+        //IF_ID
+        InIF_ID <= mem_instruc[PC];
+        InID_EX <= InIF_ID;
+        InEX_MEM <= InID_EX;
+        InMEM_WB <= InEX_MEM;
+
+        PCIF_ID <= PC;
+        PCID_EX <= PCIF_ID;
+        PCEX_MEM <= PCID_EX;
+        PCMEM_WB <= PCEX_MEM;
+
+        if (desvio == 1) begin
+            if((InEX_MEM[15:12] == 4'b0101) or (InEX_MEM[15:12] == 4'b0110))
+                PC <= PC + InEX_MEM[3:0]; //BEQ/BNE
+        end
+        
+        else if(InEX_MEM[15:12] == 4'b0100)
+            PC <= InEX_MEM[7:0]; //JUMP
+
+        else
+            PC <= PC + 1;
+
+        
+        //ID_EX
+        if(InID_EX[15:12] == 4'b0100) begin //JUMP
+            RwID_EX <= 8'b0;
+            R0ID_EX <= 8'b0;
+            R1ID_EX <= 8'b0;
+            InID_EX <= 16'b1;
+            InIF_ID <= 16'b1;
+        end
+
+        else if((InID_EX[15:12] == 4'b0001) or (InID_EX[15:12] == 4'b0010) or (InID_EX[15:12] == 4'b0011)) begin
+            //R
+            R0ID_EX <= banco_regs[InID_EX[7:4]];
+            R1ID_EX <= banco_regs[InID_EX[11:8]];
+        end
+
+        else begin
+            R0ID_EX <= banco_regs[InID_EX[7:4]];
+            RwID_EX <= banco_regs[InID_EX[11:8]];
+        end
+
+        //EX_MEM
+        if(desvio == 1) begin //bolhas
+            ulaEX_MEM <= 16'b0;
+            RwID_EX <= 8'b0;
+            R0ID_EX <= 8'b0;
+            R1ID_EX <= 8'b0;
+            InEX_MEM <= 16'b1;
+            InID_EX <= 16'b1;
+            InIF_ID <= 16'b1;
+        end
+
+        else begin
+            RwEX_MEM <= RwID_EX;
+            case (InEX_MEM[15:12])
+                4'b0001: //ADD
+                    ulaEX_MEM <= R0ID_EX + R1ID_EX;
+                
+                4'b0010: //SUB
+                    ulaEX_MEM <= R0ID_EX - R1ID_EX;
+                
+                4'b0001: //MULT
+                    ulaEX_MEM <= R0ID_EX * R1ID_EX;
+
+                4'b0001: //ADDI
+                    ulaEX_MEM <= R0ID_EX + InEX_MEM[3:0];
+                
+                4'b0001: //SUBI
+                    ulaEX_MEM <= R0ID_EX - InEX_MEM[3:0];
+
+                4'b0001: //MULTI
+                    ulaEX_MEM <= R0ID_EX * InEX_MEM[3:0];
+            endcase
+        end
+
+        //MEM_WB
+        if(InMEM_WB[15:12] == 4'b0111) //STORE
+            mem_dados[InMEM_WB[7:0]] <= RwMEM_WB;
+
+        else if(InMEM_WB[15:12] == 4'b0000) //LOAD
+            banco_regs[InMEM_WB[11:8]] <= mem_dados[InMEM_WB[7:0]];
+
+        else if(InMEM_WB[15:12] == 4'b1010) //LOAD-I
+            banco_regs[InMEM_WB[11:8]] <= InMEM_WB[7:0];
+        
+        else if((InMEM_WB[15:12] == 4'b0101) or (InMEM_WB[15:12] == 4'b0110) or (InMEM_WB[15:12] == 4'b0100) or (InMEM_WB[15:12] == 4'b1111))
+
+        else
+            banco_regs[InMEM_WB[[11:8]]] <= ulaEX_MEM;
+
 end
 endmodule
 

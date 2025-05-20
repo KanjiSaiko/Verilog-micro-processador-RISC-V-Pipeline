@@ -11,79 +11,43 @@ opcodes / tipos:
 0110011 -> SUB 	 / r
 1111111 -> NAO FAZ NADA
 
-
-funct3:
-000 -> ADD e ADDI
-101 -> BGE
-100 -> BLT
-010 -> LW
-000 -> MUL
-010 -> SW
-000 -> SUB
-
-funct7:
-0000000 -> ADD
-0100000 -> SUB
-0000001 -> MUL
+Pode-se excluir os functs e representar opcodes com 4 bits:
+0000 auipc
+0001 add
+0010 addi
+0011 bge
+0100 blt
+0101 jal
+0110 lw
+0111 mul
+1000 sw
+1001 sub
+1111 não faz nada
 
 pseudoinstrução -> LA (auipc + addi)
 
 ===============================================================================
+Comprimindo imediatos e offsets para se adequar aos 16 bits:
 
-Imediato: 	 000000000000   00001  000  00100  0010011 
+Imediato: 	 0010   0001  0011  0010 
 	  	 ADDi rd, rs1, immediate
 
 
-
-Aritmética:	 0000000  00011 00001 000 00100 0110011
+Aritmética:	 0010  0001 0011 0001
 	 	 ADD rd, rs1, rs2
 
 
-
-TIPO J:		 00000000000000000010(offset)	00100	1101111
+TIPO J:		 00000010(offset)	0010	0101
 		 jal rd, offset 
 
 
-TIPO U:	 	 00000000000000000010(imm)	 00100	 0010011 
+TIPO U:	 	 00000010(imm)	 0100	 0000
 		 auipc rd, immediate
 
 
-TIPO B:		 0000000(offset)  00011 00001 000 00000(offset) 1100011
-	 	 beq rs1, rs2, offset
+TIPO B:		 0001  0010   0001(offset)   0011
+	 	 bge rs1, rs2, offset
 
 
-=====================================================================================
-
-		Tipo-R para operações de registradores
-	funct7	  rs2(5)  rs1(5)  funct3   rd(5)   opcode(7)
-	0000000	  00000	  00000	  000      00000   0000000
-
- 
-		Tipo-I para valores imediatos short e loads
-	    imm[11:0](12)      rs1(4)   funct3   rd(5)   opcode(7)
-	  000000000000	       0000      000     00000   0000000
-
-
-
-			   Tipo-S para stores
-	 imm[11:5](7)	  rs2(4)  rs1(4)  funct3   imm[4:0](5)   opcode(7)
-	   0000000	   0000	  0000	  000        00000       0000000
-
-
-
-		 Tipo-B para desvios condicionais
-imm[12]   imm[10:5](6)  rs2(5)  rs1(5)   funct3(3)   imm[4:1]    imm[11]   opcode(7)
- 0	  000000        00000   00000      000         000	   00       0000000
-
-
-
-
-		Tipo-U para valores imediatos longos
-	     imm[31:12](20)   	    rd(5)      opcode(7)
-	    00000000000000000000    00000       0000000
-
-
-
-		Tipo-J para saltos incondicionais
-imm[20](1)   imm[10:1](9)    imm[11](2)  imm[19:12](5)    rd(5)      opcode(7)
- 0	      000000000        00          00000          00000       0000000
+TIPO S:		 0001  0010   0001(offset)   0011
+	 	 sw rs2, offset(rs1)

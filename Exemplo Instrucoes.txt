@@ -11,18 +11,17 @@ opcodes / tipos:
 0110011 -> SUB 	 / r
 1111111 -> NAO FAZ NADA
 
-Pode-se excluir os functs e representar opcodes com 4 bits:
-0000 auipc
-0001 add
-0010 addi
-0011 bge
-0100 blt
-0101 jal
-0110 lw
-0111 mul
-1000 sw
-1001 sub
-1111 não faz nada
+funct3:
+000 -> add, addi, sub, mul
+010 -> lw, sw
+100 -> blt
+101 -> bge
+
+funct7:
+0000000 -> add
+0100000 -> sub
+0000001 -> mul
+
 
 pseudoinstrução -> LA (auipc + addi)
 

@@ -26,27 +26,3 @@ funct7:
 pseudoinstrução -> LA (auipc + addi)
 
 ===============================================================================
-Comprimindo imediatos e offsets para se adequar aos 16 bits:
-
-Imediato: 	 0010   0001  0011  0010 
-	  	 ADDi rd, rs1, immediate
-
-
-Aritmética:	 0010  0001 0011 0001
-	 	 ADD rd, rs1, rs2
-
-
-TIPO J:		 00000010(offset)	0010	0101
-		 jal rd, offset 
-
-
-TIPO U:	 	 00000010(imm)	 0100	 0000
-		 auipc rd, immediate
-
-
-TIPO B:		 0001  0010   0001(offset)   0011
-	 	 bge rs1, rs2, offset
-
-
-TIPO S:		 0001  0010   0001(offset)   0011
-	 	 sw rs2, offset(rs1)

@@ -26,3 +26,21 @@ funct7:
 pseudoinstrução -> LA (auipc + addi)
 
 ===============================================================================
+imm     rd    opcode -> AUIPC / u
+imm     rs1     funct3   rd   opcode -> ADDI	 / i
+imm     rs1     funct3   rd   opcode -> LW 	    / i
+
+funct7      rs2     rs1      funct3     rd      opcode -> MUL 	 / r
+funct7      rs2     rs1      funct3     rd      opcode -> SUB 	 / r
+funct7      rs2     rs1      funct3     rd      opcode -> ADD    / r
+
+imm      rs2     rs1      funct3     imm     opcode -> BGE	 / b
+imm      rs2     rs1      funct3     imm     opcode -> BLT	 / b
+
+imm     rd    opcode -> JAL	 / j
+
+imm         rs1     funct3   imm      opcode -> SW 	 / s
+
+
+
+1111111 -> NAO FAZ NADA

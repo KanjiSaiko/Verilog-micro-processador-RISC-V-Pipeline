@@ -32,10 +32,11 @@ module tb_pipeline;
     $display("x3 = %0d", uut.banco_regs[3]);
     $display("x4 = %0d", uut.banco_regs[4]);
     $display("x5 = %0d", uut.banco_regs[5]);
+    $display("x5 = %0d", uut.banco_regs[6]);
+    $display("x5 = %0d", uut.banco_regs[7]);
+    $display("x5 = %0d", uut.banco_regs[8]);
 
 
-    $display("\n=== Memória de dados ===");
-    $display("mem[0] = %d", uut.data_mem[0]);
 
     $display("\n=== Fim da simulação ===");
     $finish;

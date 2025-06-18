@@ -21,24 +21,24 @@ module tb_pipeline;
       pc_anterior = 32'b0;
       forever begin
           @(posedge clock);
-          if(reset == 0)begin
-            if (pc_anterior != uut.PC)
-                $display("PC alterado de %d para %d", pc_anterior, uut.PC);
-                $display("Instrução IF %b", uut.IF_instr);
-                $display("Instrução ID %b", uut.ID_instr);
-                $display("Instrução EX %b", uut.EX_instr);
-            pc_anterior = uut.PC;
 
-            if (uut.ID_instr[6:0] == 7'b1100011) begin
-              if(uut.ID_funct3[3:0] == 3'b101)
-                $display("BRANCH BGE detectado na etapa ID");
-              else
-                $display("BRANCH BLT detectado na etapa ID");
+          $display("PC alterado de %d para %d", pc_anterior, uut.PC);
+          $display("Instrução IF %b", uut.IF_instr);
+          $display("Instrução ID %b", uut.ID_instr);
+          $display("Instrução EX %b", uut.EX_instr);
+          pc_anterior = uut.PC;
 
-              $display("Comparando rs1: %d     rs2: %d", uut.alu_in1, uut.alu_in2);
-              $display("Resultado da comparação: %s", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
-              $display("PC alvo: %d\n", uut.branch_target);
-            end
+          if (uut.ID_instr[6:0] == 7'b1100011) begin
+            if(uut.ID_funct3[3:0] == 3'b101)
+              $display("BRANCH BGE detectado. Instrucao: %b", uut.ID_instr);
+            else
+              $display("BRANCH BLT detectado. Instrucao: %b", uut.ID_instr);
+
+            $display("Comparando rs1: %d e rs2: %d", uut.alu_in1, uut.alu_in2);
+            $display("Resultado da comparação: %s \n", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
+//$display("Valor de EX_salto_cond <= branch_taken: %d", uut.EX_salto_cond);
+            //$display("Valor de branch_valor  <= branch_target: %d", uut.branch_valor);
+            $display("PC alvo: %d", uut.branch_target);
           end
       end
   end

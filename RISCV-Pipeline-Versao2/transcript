@@ -1,0 +1,384 @@
+# Compile of EXStage.v failed with 2 errors.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v failed with 1 errors.
+# Compile of IFStage.v failed with 5 errors.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v failed with 1 errors.
+# Compile of Pipeline.v failed with 4 errors.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v failed with 1 errors.
+# 10 compiles, 6 failed with 14 errors.
+# Compile of EXStage.v failed with 2 errors.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v failed with 1 errors.
+# Compile of IFStage.v failed with 5 errors.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v failed with 1 errors.
+# Compile of Pipeline.v failed with 4 errors.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v failed with 1 errors.
+# 10 compiles, 6 failed with 14 errors.
+# Compile of IDStage.v failed with 1 errors.
+# Compile of IDStage.v failed with 1 errors.
+# Compile of IDStage.v failed with 1 errors.
+# Compile of IDStage.v was successful.
+# Compile of WBStage.v was successful.
+# Compile of Pipeline.v failed with 4 errors.
+# Compile of PC_update.v failed with 1 errors.
+# Compile of PC_update.v was successful.
+# Compile of IFStage.v failed with 5 errors.
+# Compile of EXStage.v failed with 2 errors.
+# Compile of EXStage.v was successful.
+# Compile of IFStage.v failed with 1 errors.
+# Compile of IFStage.v failed with 4 errors.
+# Compile of IFStage.v failed with 1 errors.
+# Compile of IFStage.v failed with 4 errors.
+# Compile of IFStage.v failed with 1 errors.
+# Compile of IFStage.v failed with 1 errors.
+# Compile of IFStage.v was successful.
+# Compile of Pipeline.v failed with 4 errors.
+# Compile of Pipeline.v was successful.
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 17:20:50 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# ** Error: (vsim-3033) Instantiation of 'RegFile' failed. The design unit was not found.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 57
+#         Searched libraries:
+#             C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/work
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# Error loading design
+# End time: 17:20:51 on Jun 18,2025, Elapsed time: 0:00:01
+# Errors: 1, Warnings: 28
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 17:24:17 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# ** Error: (vsim-3033) Instantiation of 'RegFile' failed. The design unit was not found.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 57
+#         Searched libraries:
+#             C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/work
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# Error loading design
+# End time: 17:24:17 on Jun 18,2025, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 2
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 17:24:48 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# ** Error: (vsim-3033) Instantiation of 'RegFile' failed. The design unit was not found.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 57
+#         Searched libraries:
+#             C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/work
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# Error loading design
+# End time: 17:24:49 on Jun 18,2025, Elapsed time: 0:00:01
+# Errors: 1, Warnings: 2
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+restart -f
+# No Design Loaded!
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 17:44:55 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# ** Error: (vsim-3033) Instantiation of 'RegFile' failed. The design unit was not found.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 55
+#         Searched libraries:
+#             C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/work
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# Error loading design
+# End time: 17:44:55 on Jun 18,2025, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 2
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# 10 compiles, 0 failed with no errors.
+# Compile of RegFile.v was successful.
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# Compile of RegFile.v was successful.
+# 11 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 17:47:03 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# Loading work.RegFile
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# ** Warning: (vsim-3008) [CNNODP] - Component name (regs) is not on a downward path.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v Line: 38
+# ** Error: (vsim-3043) Unresolved reference to 'regs' in uut.regfile_u.regs.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v Line: 38
+# ** Warning: (vsim-3015) [PCDPC] - Port size (1) does not match connection size (32) for port 'pc_anterior'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v(4).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 70
+# ** Warning: (vsim-3015) [PCDPC] - Port size (20) does not match connection size (32) for port 'ID_imm'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v(9).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 70
+# ** Error (suppressible): (vsim-3053) Illegal output or inout port connection for port 'PC'.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 70
+# ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'link'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v(11).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 70
+# ** Error (suppressible): (vsim-3389) Port 'cache_index' not found in the connected module (4th connection).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/if_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 86
+# ** Warning: (vsim-2685) [TFMPC] - Too few port connections for 'ex_s'.  Expected 18, found 17.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/ex_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 165
+# ** Warning: (vsim-3722) C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v(165): [TFMPC] - Missing connection for port 'EX_imm'.
+# ** Warning: (vsim-2685) [TFMPC] - Too few port connections for 'mem_s'.  Expected 15, found 13.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/mem_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 188
+# ** Warning: (vsim-3722) C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v(188): [TFMPC] - Missing connection for port 'data_cache_index'.
+# ** Warning: (vsim-3722) C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v(188): [TFMPC] - Missing connection for port 'data_cache_tag_addr'.
+# ** Warning: (vsim-3015) [PCDPC] - Port size (5) does not match connection size (1) for port 'wb_rd'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v(11).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/wb_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 207
+# ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'wb_write_data'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v(12).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/wb_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 207
+# ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'register_address'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v(14).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/wb_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 207
+# Error loading design
+# End time: 17:47:04 on Jun 18,2025, Elapsed time: 0:00:01
+# Errors: 3, Warnings: 17
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# Compile of RegFile.v was successful.
+# 11 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 18:11:16 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# Loading work.RegFile
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# ** Warning: (vsim-3008) [CNNODP] - Component name (regs) is not on a downward path.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v Line: 38
+# ** Error: (vsim-3043) Unresolved reference to 'regs' in uut.regfile_u.regs.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v Line: 38
+# ** Error: (vsim-3063) Port 'PC_out' not found in the connected module (9th connection).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 72
+# ** Warning: (vsim-2685) [TFMPC] - Too few port connections for 'ex_s'.  Expected 18, found 17.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/ex_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 166
+# ** Warning: (vsim-3722) C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v(166): [TFMPC] - Missing connection for port 'EX_imm'.
+# Error loading design
+# End time: 18:11:16 on Jun 18,2025, Elapsed time: 0:00:00
+# Errors: 2, Warnings: 5
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# Compile of RegFile.v was successful.
+# 11 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 18:15:48 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# Loading work.RegFile
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# ** Error (suppressible): (vsim-3053) Illegal output or inout port connection for port 'PC'.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/pc_u File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 72
+# ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'EX_imm'. The port definition is at: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/EXStage.v(17).
+#    Time: 0 ps  Iteration: 0  Instance: /tb_pipeline/uut/ex_s File: C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v Line: 166
+# Error loading design
+# End time: 18:15:48 on Jun 18,2025, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 3
+# Compile of EXStage.v was successful.
+# Compile of forwarding.v was successful.
+# Compile of IDStage.v was successful.
+# Compile of IFStage.v was successful.
+# Compile of MEMStage.v was successful.
+# Compile of PC_update.v was successful.
+# Compile of Pipeline.v was successful.
+# Compile of tb_pipeline.v was successful.
+# Compile of ula.v was successful.
+# Compile of WBStage.v was successful.
+# Compile of RegFile.v was successful.
+# 11 compiles, 0 failed with no errors.
+vsim -gui work.tb_pipeline
+# vsim -gui work.tb_pipeline 
+# Start time: 18:18:41 on Jun 18,2025
+# Loading work.tb_pipeline
+# Loading work.RISCV_Pipeline
+# Loading work.RegFile
+# Loading work.PC_Update
+# Loading work.IF_Stage
+# Loading work.ID_Stage
+# Loading work.ForwardingUnit
+# Loading work.ALU_Unit
+# Loading work.EX_Stage
+# Loading work.MEM_Stage
+# Loading work.WB_Stage
+# WARNING: No extended dataflow license exists
+run 100ns
+# === Iniciando simulação ===
+#  IF_stage instr = 00000000000000000000000000000000
+#  ID_stage instr = 00000000000000000000000000000000
+#  EX_stage instr = 00000000000000000000000000000000
+# PC mudou: 0 -> 4
+#  IF_stage instr = 00000000101000000000000010010011
+#  ID_stage instr = 00000000000000000000000000000000
+#  EX_stage instr = 00000000000000000000000000000000
+# PC mudou: 4 -> 8
+#  IF_stage instr = 00000001010000000000000100010011
+#  ID_stage instr = 00000000101000000000000010010011
+#  EX_stage instr = 00000000000000000000000000000000
+# PC mudou: 8 -> 12
+#  IF_stage instr = 00000000001000001000000110110011
+#  ID_stage instr = 00000001010000000000000100010011
+#  EX_stage instr = 00000000101000000000000010010011
+# PC mudou: 12 -> 16
+#  IF_stage instr = 01000000010100011000001000110011
+#  ID_stage instr = 00000000001000001000000110110011
+#  EX_stage instr = 00000001010000000000000100010011
+# PC mudou: 16 -> 20
+#  IF_stage instr = 00000010001100100000001010110011
+#  ID_stage instr = 01000000010100011000001000110011
+#  EX_stage instr = 00000000001000001000000110110011
+# PC mudou: 20 -> 24
+#  IF_stage instr = 00000000000000000100001110000011
+#  ID_stage instr = 00000010001100100000001010110011
+#  EX_stage instr = 01000000010100011000001000110011
+# PC mudou: 24 -> 28
+#  IF_stage instr = 00000000010000000110010000000011
+#  ID_stage instr = 00000000000000000100001110000011
+#  EX_stage instr = 00000010001100100000001010110011
+# PC mudou: 28 -> 32
+#  IF_stage instr = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#  ID_stage instr = 00000000010000000110010000000011
+#  EX_stage instr = 00000000000000000100001110000011
+# End time: 18:20:08 on Jun 18,2025, Elapsed time: 0:01:27
+# Errors: 0, Warnings: 2

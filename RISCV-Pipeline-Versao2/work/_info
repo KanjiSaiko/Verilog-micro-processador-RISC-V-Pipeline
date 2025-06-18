@@ -1,0 +1,274 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/Users/kanji/Trabalhos/microprocessador-RISCV-pipeline/model2
+vALU_Unit
+Z0 !s110 1750281517
+!i10b 1
+!s100 OGO=<;^iP@bmX=IAXEIzj3
+Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
+IVCXEP;9A[B:U_4YA>nEiO0
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+Z3 dC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2
+w1750273190
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/ula.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/ula.v
+!i122 117
+L0 1 81
+Z4 OV;L;2020.1;71
+r1
+!s85 0
+31
+Z5 !s108 1750281517.000000
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/ula.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/ula.v|
+!i113 1
+Z6 o-work work
+Z7 tCvgOpt 0
+n@a@l@u_@unit
+vEX_Stage
+Z8 !s110 1750281516
+!i10b 1
+!s100 8HJ1U9GUk4PKF7lR_1Yo;2
+R1
+I2cUWA2d^BVBCkzUKYjXoU0
+R2
+R3
+w1750281328
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/EXStage.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/EXStage.v
+!i122 109
+L0 1 44
+R4
+r1
+!s85 0
+31
+Z9 !s108 1750281516.000000
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/EXStage.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/EXStage.v|
+!i113 1
+R6
+R7
+n@e@x_@stage
+vForwardingUnit
+R8
+!i10b 1
+!s100 :3oX[CiHCzQ`_V83gLk8R0
+R1
+I5;E_InQ1V952mKP>BS?ZZ3
+R2
+R3
+w1750273175
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/forwarding.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/forwarding.v
+!i122 110
+L0 1 20
+R4
+r1
+!s85 0
+31
+R9
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/forwarding.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/forwarding.v|
+!i113 1
+R6
+R7
+n@forwarding@unit
+vID_Stage
+R0
+!i10b 1
+!s100 5N0DVM1mebR=4nXj?LM[h3
+R1
+I@4>a5Q=j7YLfehNQI32j]0
+R2
+R3
+w1750275942
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IDStage.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IDStage.v
+!i122 111
+L0 1 131
+R4
+r1
+!s85 0
+31
+R9
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IDStage.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IDStage.v|
+!i113 1
+R6
+R7
+n@i@d_@stage
+vIF_Stage
+R0
+!i10b 1
+!s100 B6UNQe`R7Rlj>X>[H0ND03
+R1
+IEUmd8b847<:d7RF_82l]@1
+R2
+R3
+w1750277393
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IFStage.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IFStage.v
+!i122 112
+L0 1 78
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IFStage.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/IFStage.v|
+!i113 1
+R6
+R7
+n@i@f_@stage
+vMEM_Stage
+R0
+!i10b 1
+!s100 E0Llan>EKoK[cg6n510cG1
+R1
+IBZcV5z`=hlR0nVUii>_^M2
+R2
+R3
+w1750272753
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/MEMStage.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/MEMStage.v
+!i122 113
+L0 1 90
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/MEMStage.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/MEMStage.v|
+!i113 1
+R6
+R7
+n@m@e@m_@stage
+vPC_Update
+R0
+!i10b 1
+!s100 c[?W6i_?ijUTLC4?n;]PT3
+R1
+ImnBP>zfNh[i:Z4Yi;007<1
+R2
+R3
+w1750280914
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v
+!i122 114
+L0 1 30
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/PC_update.v|
+!i113 1
+R6
+R7
+n@p@c_@update
+vRegFile
+R0
+!i10b 1
+!s100 =de5YBFCZIMFUG?1fKaL63
+R1
+Id;2hVZ`h`BmTo[EN9zl[L3
+R2
+R3
+w1750274896
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/RegFile.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/RegFile.v
+!i122 119
+L0 1 29
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/RegFile.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/RegFile.v|
+!i113 1
+R6
+R7
+n@reg@file
+vRISCV_Pipeline
+R0
+!i10b 1
+!s100 QYG78lz`_Q5TKhL@a[RS_3
+R1
+IQEJHnW^Ljk=GCInFPhe<80
+R2
+R3
+w1750281501
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v
+!i122 115
+L0 3 226
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/Pipeline.v|
+!i113 1
+R6
+R7
+n@r@i@s@c@v_@pipeline
+vtb_pipeline
+R0
+!i10b 1
+!s100 Zm_BKPVzWabN?LUQVQ;CN0
+R1
+I5d1_5DCm]dTF:g7kE`Gkk0
+R2
+R3
+w1750281139
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v
+!i122 116
+L0 4 76
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/tb_pipeline.v|
+!i113 1
+R6
+R7
+vWB_Stage
+R0
+!i10b 1
+!s100 H0m[[1;L]CW8O6<d40BCz2
+R1
+IS>iYc3Qo3VIolQ2`Cz_H60
+R2
+R3
+w1750275635
+8C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v
+FC:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v
+!i122 118
+L0 3 34
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/kanji/Trabalhos/RISCV-Pipeline-Versao2/WBStage.v|
+!i113 1
+R6
+R7
+n@w@b_@stage

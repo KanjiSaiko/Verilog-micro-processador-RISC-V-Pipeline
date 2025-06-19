@@ -7,6 +7,8 @@ module EX_Stage (
   input  wire [6:0]   ID_opcode,
   input  wire         ID_regwrite,
   input  wire [31:0]  ID_imm,
+  input reg  [4:0]   ID_indiceR1,
+  input reg  [4:0]   ID_indiceR2,
   input  wire [31:0]  ID_r2,
   input  wire [31:0]  alu_result,
   // saídas para o estágio MEM ou para controle de fluxo
@@ -15,6 +17,8 @@ module EX_Stage (
   output reg  [6:0]   EX_opcode,
   output reg          EX_regwrite,
   output reg  [31:0]  EX_imm,
+  output reg  [4:0]   EX_indiceR1,
+  output reg  [4:0]   EX_indiceR2,
   output reg  [31:0]  EX_r2,
   output reg  [31:0]  EX_alu_result
 );
@@ -28,8 +32,12 @@ module EX_Stage (
       EX_alu_result  <= 32'b0;
       EX_r2          <= 32'b0;
       EX_imm         <= 32'b0;
+      EX_indiceR1    <= 4'b0;
+      EX_indiceR2    <= 4'b0;
     end else begin
       // registra os sinais vindos do ID
+      EX_indiceR1   <= ID_indiceR1;
+      EX_indiceR2   <= ID_indiceR2;
       EX_instr      <= ID_instr;
       EX_rd         <= ID_rd;
       EX_opcode     <= ID_opcode;

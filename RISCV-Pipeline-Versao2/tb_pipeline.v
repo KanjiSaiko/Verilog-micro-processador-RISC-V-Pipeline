@@ -56,7 +56,14 @@ module tb_pipeline;
       $display(" IF_stage instr = %b", uut.IF_instr);
       $display(" ID_stage instr = %b", uut.ID_instr);
       $display(" EX_stage instr = %b", uut.EX_instr);
-
+      $display(" ME_stage instr = %b", uut.MEM_instr);
+      $display(" WB_stage instr = %b", uut.WB_instr);
+      $display("===========================================");
+      $display(" Valor do Indice1 = %0d", uut.regfile_u.rs1_indice);
+      $display(" Valor do Indice2 = %0d", uut.regfile_u.rs2_indice);
+      $display(" Valor do reg5 = %0d", uut.regfile_u.banco_regs[5]);
+      $display(" Valor do reg6 = %0d", uut.regfile_u.banco_regs[6]);
+      $display("===========================================");
       // detecta e reporta branches na etapa ID
       if (uut.ID_instr[6:0] == 7'b1100011) begin
         if (uut.ID_instr[14:12] == 3'b101)

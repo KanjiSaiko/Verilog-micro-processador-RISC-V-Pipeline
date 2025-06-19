@@ -8,7 +8,7 @@ module RISCV_Pipeline (
   //===============================
   // Memórias e banco de registradores
   //===============================
-  reg [31:0] instr_mem [0:21];    // Memoria de instruçoes
+  reg [31:0] instr_mem [0:255];    // Memoria de instruçoes
   reg [31:0] data_mem  [0:255];   // Memoria de dados
   reg [31:0] banco_regs [0:31];   // 32 registradores
   reg [31:0] register_address;    // Para armazenar endereço de retorno (x1)
@@ -41,6 +41,8 @@ module RISCV_Pipeline (
   reg [4:0]  MEM_rd;
   reg [6:0]  MEM_opcode;
   reg        MEM_regwrite;
+
+  reg [31:0] WB_instr;
 
   //=======================
   // Contador de Programa
@@ -82,7 +84,7 @@ module RISCV_Pipeline (
                         ID_r2;
 
   //=======================
-  // Estagio EX: Execução
+  // Estagio EX: ULA
   //=======================
   always @(*) begin
     alu_result    = 0;
@@ -141,43 +143,6 @@ module RISCV_Pipeline (
   wire [1:0]  data_cache_index = EX_alu_result[3:2];   // Indexa 4 linhas
   wire [27:0] data_cache_tag_addr = EX_alu_result[31:4]; // Tag
 
-  
-  
-  //=======================
-  // Inicialização
-  //=======================
-  initial begin
-    PC = 0;
-
-    // Exemplo de instruções: addi, add, sub, mul, etc.
-    instr_mem[0] = 32'b00000000101000000000000010010011; // addi x1, x0, 10
-    instr_mem[1] = 32'b00000001010000000000000100010011; // addi x2, x0, 20
-    instr_mem[2] = 32'b00000000001000001000000110110011; // add x3, x1, x2
-    instr_mem[3] = 32'b01000000010100011000001000110011; // sub x4, x3, x5
-    instr_mem[4] = 32'b00000010001100100000001010110011; // mul x5, x4, x3
-    instr_mem[5] = 32'b00000000000000000100001110000011; // lw x7, 0(x0)
-    instr_mem[6] = 32'b00000000010000000110010000000011; // lw x8, 4(x0)
-
-
-    // Zera banco de registradores e memoria
-    for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
-    for (i = 0; i < 256; i = i + 1) data_mem[i]  = 0;
-    
-        for (i = 0; i < 4; i = i + 1) begin
-      data_cache_valid[i] <= 0;
-      data_cache_tag[i]   <= 0;
-      data_cache_data[i]  <= 0;
-    end
-
-      // Inicializa a memória de dados
-    data_mem[0] = 32'b00000000000000000000001000000000;
-    data_mem[1] = 32'b00000000000000000000010000000000;
-    data_mem[2] = 32'b00000000000000000000100000000000;
-    data_mem[3] = 32'b00000000000000000001000000000000;
-  end
-    
- 
-
   //=======================
   // Atualização do PC
   //=======================
@@ -209,14 +174,18 @@ always @(posedge clock or posedge reset) begin
     if (reset) begin
       IF_instr <= 0;
       IF_PC    <= 0;
-
+      for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
       // Invalida a cache
       for (i = 0; i < 4; i = i + 1) begin
         instr_cache_valid[i] <= 0;
         instr_cache_tag[i]   <= 0;
         instr_cache_data[i]  <= 0;
       end
-
+      for (i = 0; i < 4; i = i + 1) begin
+        data_cache_valid[i] <= 0;
+        data_cache_tag[i]   <= 0;
+        data_cache_data[i]  <= 0;
+      end
     end else begin
       IF_PC <= PC;
 
@@ -232,7 +201,6 @@ always @(posedge clock or posedge reset) begin
       end
     end
   end
-
 
   //=======================
   // Estagio ID: Decodificação
@@ -408,8 +376,9 @@ always @(posedge clock or posedge reset) begin
   //====================
     always @(posedge clock or posedge reset) begin
     if (reset) begin
-      // Nada a fazer no reset
+      WB_instr <= 32'b0;
     end else begin
+      WB_instr <= MEM_instr;
       if (MEM_regwrite && MEM_rd != 0) begin
         banco_regs[MEM_rd] <= MEM_data;
         register_address   <= banco_regs[1]; // x1

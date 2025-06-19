@@ -26,9 +26,7 @@ module ALU_Unit(
                         fwdWB_r1 ? MEM_data :
                                    ID_r1;
 
-  wire [31:0] alu_in2 = (ID_opcode==7'b0010011 ||
-                        ID_opcode==7'b0000011 ||
-                        ID_opcode==7'b0100011) ? ID_imm :
+  wire [31:0] alu_in2 = (ID_opcode==7'b0010011 || ID_opcode==7'b0000011 || ID_opcode==7'b0100011) ? ID_imm :
                         fwdEX_r2 ? EX_alu_result :
                         fwdWB_r2 ? MEM_data :
                                    ID_r2;
@@ -40,8 +38,6 @@ module ALU_Unit(
   always @(*) begin
     // defaults
     alu_result    = 32'b0;
-    branch_taken  = 1'b0;
-    branch_target = 32'b0;
 
     case (ID_opcode)
       // R-Type
@@ -52,6 +48,8 @@ module ALU_Unit(
           7'b0100000: alu_result = alu_in1 - alu_in2;  // SUB
           default:    alu_result = 32'b0;
         endcase
+        branch_taken  = 1'b0;
+        branch_target = 32'b0;
       end
 
       // I-Type (ADDI), LW, SW
@@ -59,11 +57,15 @@ module ALU_Unit(
       7'b0000011,
       7'b0100011: begin
         alu_result = alu_in1 + ID_imm;
+        branch_taken  = 1'b0;
+        branch_target = 32'b0;
       end
 
       // AUIPC
       7'b0010111: begin
         alu_result = imm_shift + ID_PC;
+        branch_taken  = 1'b0;
+        branch_target = 32'b0;
       end
 
       // Branches
@@ -73,7 +75,9 @@ module ALU_Unit(
       end
 
       default: begin
-        // nada adicional
+        alu_result    = 32'b0;
+        branch_taken  = 1'b0;
+        branch_target = 32'b0;
       end
     endcase
   end

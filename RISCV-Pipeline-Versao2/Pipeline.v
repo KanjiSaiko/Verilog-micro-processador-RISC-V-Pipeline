@@ -24,7 +24,7 @@ module RISCV_Pipeline (
   // 4) Fios de interconexão restantes
   //=======================================
   // ID
-  wire [31:0] ID_PC,   ID_instr,   ID_r1,    ID_r2,    ID_imm, EX_imm;
+  wire [31:0] ID_PC,   ID_instr,  ID_imm, EX_imm;
   wire [31:0] imm_sext, imm_shift;
   wire        flag_jump, ID_regwrite;
   wire [4:0]  ID_indiceR1, ID_indiceR2, ID_rd;
@@ -38,20 +38,28 @@ module RISCV_Pipeline (
   wire        branch_taken;
   // EX
   wire [31:0] EX_instr, EX_alu_result, EX_r2;
-  wire [4:0]  EX_rd;
+  wire [4:0]  EX_rd, EX_indiceR1, EX_indiceR2;
   wire [6:0]  EX_opcode;
   wire        EX_regwrite;
   // MEM
   wire [31:0] MEM_instr, MEM_data;
-  wire [4:0]  MEM_rd;
+  wire [4:0]  MEM_rd, MEM_indiceR1, MEM_indiceR2;
   wire [6:0]  MEM_opcode;
   wire        MEM_regwrite;
+
+  //WB
+  wire[31:0] WB_instr;
+  wire [4:0] WB_indiceR1, WB_indiceR2;
 
   // wires para ler o regfile
   wire [31:0] reg_r1, reg_r2;
 
   wire [31:0] pc_anterior, link;
 
+  wire        regfile_we;
+  wire [4:0]  regfile_rd;
+  wire [31:0] regfile_wdata;
+  wire [31:0] wb_link;
 
   // instancia RegFile
   RegFile regfile_u (
@@ -59,10 +67,10 @@ module RISCV_Pipeline (
     .reset      (reset),
     .regwrite   (MEM_regwrite),
     .rd         (MEM_rd),
-    .write_data (MEM_data),
-    .rs1        (ID_indiceR1),
-    .rs2        (ID_indiceR2),
-    .rs1_data   (reg_r1),
+    .write_data (regfile_wdata),
+    .rs1_indice (ID_indiceR1), //entra com os indices dos registradores a serem lidos na etapa ID
+    .rs2_indice (ID_indiceR2),
+    .rs1_data   (reg_r1), //sai com os valores dos registradores
     .rs2_data   (reg_r2)
   );
 
@@ -102,19 +110,15 @@ module RISCV_Pipeline (
     .IF_PC       (IF_PC),
     .IF_instr    (IF_instr),
     .branch_taken(branch_taken),
-    .rs1_data   (reg_r1),
-    .rs2_data   (reg_r2),
     .ID_PC       (ID_PC),
     .ID_instr    (ID_instr),
-    .ID_r1       (ID_r1),
-    .ID_r2       (ID_r2),
     .ID_imm      (ID_imm),
     .imm_sext    (imm_sext),
     .imm_shift   (imm_shift),
     .flag_jump   (flag_jump),
     .ID_regwrite (ID_regwrite),
-    .ID_indiceR1 (ID_indiceR1),
-    .ID_indiceR2 (ID_indiceR2),
+    .Indice_R1   (ID_indiceR1),
+    .Indice_R2   (ID_indiceR2),
     .ID_rd       (ID_rd),
     .ID_opcode   (ID_opcode),
     .ID_funct3   (ID_funct3),
@@ -129,8 +133,8 @@ module RISCV_Pipeline (
     .MEM_regwrite (MEM_regwrite),
     .EX_rd        (EX_rd),
     .MEM_rd       (MEM_rd),
-    .ID_rs1       (ID_indiceR1),
-    .ID_rs2       (ID_indiceR2),
+    .Indice_rs1   (ID_indiceR1),
+    .Indice_rs2   (ID_indiceR2),
     .fwdEX_r1     (fwdEX_r1),
     .fwdWB_r1     (fwdWB_r1),
     .fwdEX_r2     (fwdEX_r2),
@@ -141,8 +145,8 @@ module RISCV_Pipeline (
   // 10) ALU_Unit (inclui branch)
   //=======================================
   ALU_Unit alu_u (
-    .ID_r1         (ID_r1),
-    .ID_r2         (ID_r2),
+    .ID_r1         (reg_r1),
+    .ID_r2         (reg_r2),
     .ID_imm        (ID_imm),
     .ID_PC         (ID_PC),
     .imm_shift     (imm_shift),
@@ -170,11 +174,15 @@ module RISCV_Pipeline (
     .ID_rd         (ID_rd),
     .ID_opcode     (ID_opcode),
     .ID_regwrite   (ID_regwrite),
+    .ID_indiceR1   (ID_indiceR1),
+    .ID_indiceR2   (ID_indiceR2),
     .ID_imm        (ID_imm),
-    .ID_r2         (ID_r2),
+    .ID_r2         (reg_r2),
     .alu_result    (alu_result),
     .EX_instr      (EX_instr),
     .EX_rd         (EX_rd),
+    .EX_indiceR1   (EX_indiceR1),
+    .EX_indiceR2   (EX_indiceR2),
     .EX_opcode     (EX_opcode),
     .EX_regwrite   (EX_regwrite),
     .EX_imm        (EX_imm),
@@ -193,12 +201,16 @@ module RISCV_Pipeline (
     .reset               (reset),
     .EX_instr            (EX_instr),
     .EX_rd               (EX_rd),
+    .EX_indiceR1   (EX_indiceR1),
+    .EX_indiceR2   (EX_indiceR2),
     .EX_opcode           (EX_opcode),
     .EX_regwrite         (EX_regwrite),
     .EX_alu_result       (EX_alu_result),
     .EX_r2               (EX_r2),
     .data_cache_index    (data_cache_index), 
     .data_cache_tag_addr (data_cache_tag_addr),
+    .MEM_indiceR1   (MEM_indiceR1),
+    .MEM_indiceR2   (MEM_indiceR2),
     .MEM_instr           (MEM_instr),
     .MEM_rd              (MEM_rd),
     .MEM_opcode          (MEM_opcode),
@@ -206,10 +218,6 @@ module RISCV_Pipeline (
     .MEM_data            (MEM_data)
   );
 
-  wire        regfile_we;
-  wire [4:0]  regfile_rd;
-  wire [31:0] regfile_wdata;
-  wire [31:0] wb_link;
   //=======================================
   // 13) WB_Stage
   //=======================================
@@ -219,8 +227,14 @@ module RISCV_Pipeline (
     .MEM_regwrite    (MEM_regwrite),
     .MEM_rd          (MEM_rd),
     .MEM_data        (MEM_data),
+    .MEM_indiceR1   (MEM_indiceR1),
+    .MEM_indiceR2   (MEM_indiceR2),
+    .MEM_instr       (MEM_instr),
     .wb_regwrite     (regfile_we),
     .wb_rd           (regfile_rd),
+    .WB_instr        (WB_instr),
+    .WB_indiceR1   (WB_indiceR1),
+    .WB_indiceR2   (WB_indiceR2),
     .wb_write_data   (regfile_wdata),
     .register_address(wb_link)
   );

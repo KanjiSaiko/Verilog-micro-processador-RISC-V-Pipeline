@@ -136,7 +136,7 @@ module RISCV_Pipeline (
     //=======================
   // Cache de Dados (direta, 4 linhas)
   //=======================
-  reg [15:0] data_cache_data [0:3];  // Dados da cache (16 bits)
+  reg [31:0] data_cache_data [0:3];  // Dados da cache (16 bits)
   reg [27:0] data_cache_tag  [0:3];  // Tags da cache
   reg        data_cache_valid[0:3];  // Bits de validade da cache
 
@@ -263,7 +263,7 @@ always @(posedge clock or posedge reset) begin
         end
 
         7'b1100011: begin // bge e blt
-          ID_imm        <= {8'b0, IF_instr[31:25], IF_instr[11:7]};
+          ID_imm        <= {IF_instr[31:25], IF_instr[11:7]};
           ID_indiceR2   <= IF_instr[24:20];
           ID_indiceR1   <= IF_instr[19:15];
           ID_r2         <= banco_regs[IF_instr[24:20]];
@@ -274,7 +274,7 @@ always @(posedge clock or posedge reset) begin
         end
 
         7'b1101111: begin // jal
-          ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21], 1'b0};
+          ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21]};
           ID_rd         <= IF_instr[11:7];
           ID_opcode     <= IF_instr[6:0];
           ID_regwrite   <= 1;
@@ -350,22 +350,22 @@ always @(posedge clock or posedge reset) begin
         // Leitura da cache de dados
         if (data_cache_valid[data_cache_index] && data_cache_tag[data_cache_index] == data_cache_tag_addr) begin
           // Cache hit
-          MEM_data <= {16'b0, data_cache_data[data_cache_index]};
+          MEM_data <= data_cache_data[data_cache_index];
         end else begin
           // Cache miss: acessa memória principal e atualiza cache
-          data_cache_data[data_cache_index]  <= data_mem[EX_alu_result >> 1]; // 16 bits por posição
+          data_cache_data[data_cache_index]  <= data_mem[EX_alu_result >> 2]; // 16 bits por posição
           data_cache_tag[data_cache_index]   <= data_cache_tag_addr;
           data_cache_valid[data_cache_index] <= 1;
-          MEM_data <= {16'b0, data_mem[EX_alu_result >> 1]};
+          MEM_data <= data_mem[EX_alu_result >> 2];
         end
       end else if (EX_opcode == 7'b0100011) begin // SW
         // Escrita direta na memoria principal
-        data_mem[EX_alu_result >> 1] <= EX_r2[15:0];
+        data_mem[EX_alu_result >> 2] <= EX_r2[15:0];
 
         // Invalida a linha da cache correspondente (write-through + no write-allocate)
         data_cache_valid[data_cache_index] <= 0;
       end else begin
-        MEM_data <= EX_alu_result; // Para instruções tipo R e AUIPC
+        MEM_data <= EX_alu_result; // Para instruções tipo R, ADDI e AUIPC
       end
     end
   end

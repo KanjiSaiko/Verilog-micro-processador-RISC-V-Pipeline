@@ -46,6 +46,7 @@ module RISCV_Pipeline (
   reg [31:0] MEM_instr, MEM_data;
   reg [4:0]  MEM_rd;
   reg [6:0]  MEM_opcode;
+  reg [31:0] MEM_alu_result;
   reg MEM_regwrite;
   reg MEM_MemRead;
   reg MEM_MemWrite;
@@ -90,6 +91,15 @@ module RISCV_Pipeline (
   wire [27:0] data_cache_tag_addr = EX_alu_result[31:4]; // Tag
 
 
+  //caminho bypass acesso a memoria
+  wire [31:0] mem_read_data_out;
+  assign mem_read_data_out = (data_cache_valid[data_cache_index] && 
+                            data_cache_tag[data_cache_index] == data_cache_tag_addr) 
+                           ? data_cache_data[data_cache_index]  // Cache Hit
+                           : data_mem[EX_alu_result >> 2];        // Cache Miss
+
+  wire [31:0] data_to_forward_from_mem = MEM_MemRead ? mem_read_data_out : EX_alu_result;
+
   //=======================
   // Forwarding Logic
   //=======================
@@ -108,21 +118,21 @@ module RISCV_Pipeline (
   //=======================
   // Seleção de operandos para ULA (ALU Mux)
   //=======================
-  wire [31:0] alu_in1 = fwdMEM_r1 ? MEM_data :
-                        fwdWB_r1 ?  WB_data  :
+  wire [31:0] alu_in1 = fwdMEM_r1 ? data_to_forward_from_mem :
+                        fwdWB_r1 ?  WB_data                  :
                         EX_r1;
 
   wire [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
                           ID_imm :
-                        fwdMEM_r2 ? MEM_data :
-                        fwdWB_r2 ?  WB_data  :
+                        fwdMEM_r2 ? data_to_forward_from_mem :
+                        fwdWB_r2 ?  WB_data                  :
                         EX_r2;
 
 
   //=======================
   // Atualização do PC
   //=======================
-always @(posedge clock or posedge reset) begin
+  always @(posedge clock or posedge reset) begin
     if (reset) begin
       PC               <= 0;
       register_address <= 0;
@@ -166,17 +176,22 @@ always @(posedge clock or posedge reset) begin
       IF_instr <= 0;
       IF_PC    <= 0;
     end else begin
-      IF_PC <= PC;
-
-      if (instr_cache_valid[cache_index] && instr_cache_tag[cache_index] == cache_tag) begin
-        // Cache hit
-        IF_instr <= instr_cache_data[cache_index];
-      end else begin
-        // Cache miss: busca da memoria principal
-        IF_instr <= instr_mem[PC >> 2];
-        instr_cache_data[cache_index]  <= instr_mem[PC >> 2];
-        instr_cache_tag[cache_index]   <= cache_tag;
-        instr_cache_valid[cache_index] <= 1;
+      if(stall)begin
+        IF_instr <= IF_instr;
+        IF_PC <= IF_PC;
+      end
+      else begin
+        IF_PC <= PC;
+        if (instr_cache_valid[cache_index] && instr_cache_tag[cache_index] == cache_tag) begin
+          // Cache hit
+          IF_instr <= instr_cache_data[cache_index];
+        end else begin
+          // Cache miss: busca da memoria principal
+          IF_instr <= instr_mem[PC >> 2];
+          instr_cache_data[cache_index]  <= instr_mem[PC >> 2];
+          instr_cache_tag[cache_index]   <= cache_tag;
+          instr_cache_valid[cache_index] <= 1;
+        end
       end
     end
   end
@@ -203,7 +218,6 @@ always @(posedge clock or posedge reset) begin
       flag_jump    <= 0;
       ID_MemRead  <= 0;
       ID_MemWrite <= 0;
-      flag_jump <= 0;
     end else begin
       if(stall)begin
         ID_instr <= ID_instr;
@@ -341,7 +355,7 @@ always @(posedge clock or posedge reset) begin
       EX_rd       <= 0;
       EX_opcode   <= 0;
       EX_regwrite <= 0;
-      EX_alu_result <= 0;
+      EX_alu_result <= EX_alu_result;
       EX_r1       <= 0;
       EX_r2       <= 0;
       EX_imm      <= 0;
@@ -412,6 +426,7 @@ always @(posedge clock or posedge reset) begin
       MEM_regwrite <= 0;
       MEM_MemWrite  <= 0;
       MEM_MemRead   <= 0;
+      MEM_alu_result <= 0;
     end else begin
       MEM_instr      <= EX_instr;
       MEM_rd         <= EX_rd;
@@ -419,32 +434,14 @@ always @(posedge clock or posedge reset) begin
       MEM_regwrite   <= EX_regwrite;
       MEM_MemRead    <= EX_MemRead;
       MEM_MemWrite   <= EX_MemWrite;
+      MEM_alu_result <= EX_alu_result;
       if(EX_MemRead)begin //LW
-        case (EX_opcode)
-          7'b0000011:begin
-              // Leitura da cache de dados
-              if (data_cache_valid[data_cache_index] && data_cache_tag[data_cache_index] == data_cache_tag_addr) begin
-                // Cache hit
-                MEM_data <= data_cache_data[data_cache_index];
-              end else begin
-                // Cache miss: acessa memória principal e atualiza cache
-                data_cache_data[data_cache_index]  <= data_mem[EX_alu_result >> 2]; // 16 bits por posição
-                data_cache_tag[data_cache_index]   <= data_cache_tag_addr;
-                data_cache_valid[data_cache_index] <= 1;
-                MEM_data <= data_mem[EX_alu_result >> 2];
-              end
-          end
-        endcase
+        MEM_data <= mem_read_data_out;
       end
       else if(EX_MemWrite) begin //SW
-        case(EX_opcode)
-          7'b0100011:begin
-          // Escrita direta na memoria principal
-          data_mem[EX_alu_result >> 2] <= EX_r2[15:0];
+          data_mem[EX_alu_result >> 2] <= EX_r2;
           // Invalida a linha da cache correspondente (write-through + no write-allocate)
           data_cache_valid[data_cache_index] <= 0;
-          end
-        endcase
       end
       else
         MEM_data <= EX_alu_result; // Para instruções tipo R, ADDI e AUIPC

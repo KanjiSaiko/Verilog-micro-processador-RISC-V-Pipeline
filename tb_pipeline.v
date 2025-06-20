@@ -68,7 +68,7 @@ module tb_pipeline;
       uut.instr_mem[15] = 32'b00000000011000000010111000100011; // 0x03C: sw t1, 28(zero) // CORRIGIDO
 
       // Passada 2: Mesclagem Final
-      uut.instr_mem[16] = 32'b00000001000000000000001010000011; // 0x040: (final_merge) lw t0, 16(zero)
+      uut.instr_mem[16] = 32'b00000001000000000000001010000011; // 0x040: lw t0, 16(zero) (final_merge) 
       uut.instr_mem[17] = 32'b00000001010000000000001100000011; // 0x044: lw t1, 20(zero)
       uut.instr_mem[18] = 32'b00000001100000000000001110000011; // 0x048: lw t2, 24(zero)
       uut.instr_mem[19] = 32'b00000001110000000000010000000011; // 0x04C: lw t3, 28(zero)
@@ -123,7 +123,7 @@ module tb_pipeline;
     forever begin
       @(posedge clock);
       if(reset == 0) begin
-        $display("\nPC alterado de %d para %d", pc_anterior, uut.PC);
+        $display("\n\nPC alterado de %d para %d", pc_anterior, uut.PC);
         case (uut.IF_instr[6:0])
           7'b0110011: begin // R-Type
               case (uut.IF_instr[31:25])
@@ -322,7 +322,13 @@ module tb_pipeline;
           7'b0000011:  // LW
           $display("ETAPA MEM: Valor na Memoria de Dados = %0d || Posicao da mem_dados = %0d", uut.data_mem[uut.EX_alu_result >> 2], (uut.EX_alu_result >> 2));
         endcase
-
+        /*$display("====================================================");
+          $display("Valor de EX_alu_result               : %0d", uut.EX_alu_result);
+          $display("Valor do dado(posicao EX_alu_result) : %0d", uut.data_mem[uut.EX_alu_result >> 2]);
+          $display("Valor de MEM_MEMRead                 : %0d", uut.MEM_MemRead);
+          $display("Valor de MEM_data                    : %0d", uut.MEM_data);
+          $display("Valor de WB_data                     : %0d", uut.WB_data);
+        $display("====================================================");*/
         pc_anterior = uut.PC;
         $display("--------------------------------------------------------------------------------");
         $display("Reg[0]: %0d  || Reg[1]: %0d  || Reg[2]: %0d  || Reg[3]: %0d", uut.banco_regs[0], uut.banco_regs[1], uut.banco_regs[2], uut.banco_regs[3]);

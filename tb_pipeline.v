@@ -46,22 +46,22 @@ module tb_pipeline;
       // Passada 1.1: Ordena os dois primeiros elementos
       uut.instr_mem[0] = 32'b00000000000000000000001010000011; // 0x000: lw t0, 0(zero)
       uut.instr_mem[1] = 32'b00000000010000000000001100000011; // 0x004: lw t1, 4(zero)
-      uut.instr_mem[2] = 32'b00000000101000101100010001100011; // 0x008: blt t0, t1, 16 (pula para merge1_ok)
-      uut.instr_mem[3] = 32'b00000000101100000000001000100011; // 0x00C: sw t1, 16(zero)
-      uut.instr_mem[4] = 32'b00000000101000000000001010100011; // 0x010: sw t0, 20(zero)
+      uut.instr_mem[2] = 32'b00000000011000101100100001100011; // 0x008: blt t0, t1, 16 (pula para merge1_ok) // CORRIGIDO
+      uut.instr_mem[3] = 32'b00000000011000000010100000100011; // 0x00C: sw t1, 16(zero) // CORRIGIDO
+      uut.instr_mem[4] = 32'b00000000010100000010101000100011; // 0x010: sw t0, 20(zero) // CORRIGIDO
       uut.instr_mem[5] = 32'b00000001000000000000000001101111; // 0x014: jal zero, 16 (pula para merge2)
-      uut.instr_mem[6] = 32'b00000000101000000000001000100011; // 0x018: (merge1_ok) sw t0, 16(zero)
-      uut.instr_mem[7] = 32'b00000000101100000000001010100011; // 0x01C: sw t1, 20(zero)
+      uut.instr_mem[6] = 32'b00000000010100000010100000100011; // 0x018: (merge1_ok) sw t0, 16(zero) // CORRIGIDO
+      uut.instr_mem[7] = 32'b00000000011000000010101000100011; // 0x01C: sw t1, 20(zero) // CORRIGIDO
 
       // Passada 1.2: Ordena os dois últimos elementos
       uut.instr_mem[8] = 32'b00000000100000000000001010000011; // 0x020: (merge2) lw t0, 8(zero)
       uut.instr_mem[9] = 32'b00000000110000000000001100000011; // 0x024: lw t1, 12(zero)
-      uut.instr_mem[10] = 32'b00000000101000101100010001100011; // 0x028: blt t0, t1, 16 (pula para merge2_ok)
-      uut.instr_mem[11] = 32'b00000001011000000000001100100011; // 0x02C: sw t1, 24(zero)
-      uut.instr_mem[12] = 32'b00000001110000000000001010100011; // 0x030: sw t0, 28(zero)
+      uut.instr_mem[10] = 32'b00000000011000101100100001100011; // 0x028: blt t0, t1, 16 (pula para merge2_ok) // CORRIGIDO
+      uut.instr_mem[11] = 32'b00000000011000000010110000100011; // 0x02C: sw t1, 24(zero) // CORRIGIDO
+      uut.instr_mem[12] = 32'b00000000010100000010111000100011; // 0x030: sw t0, 28(zero) // CORRIGIDO
       uut.instr_mem[13] = 32'b00000001000000000000000001101111; // 0x034: jal zero, 16 (pula para final_merge)
-      uut.instr_mem[14] = 32'b00000001100000000000001010100011; // 0x038: (merge2_ok) sw t0, 24(zero)
-      uut.instr_mem[15] = 32'b00000001110000000000001100100011; // 0x03C: sw t1, 28(zero)
+      uut.instr_mem[14] = 32'b00000000010100000010110000100011; // 0x038: (merge2_ok) sw t0, 24(zero) // CORRIGIDO
+      uut.instr_mem[15] = 32'b00000000011000000010111000100011; // 0x03C: sw t1, 28(zero) // CORRIGIDO
 
       // Passada 2: Mesclagem Final
       uut.instr_mem[16] = 32'b00000001000000000000001010000011; // 0x040: (final_merge) lw t0, 16(zero)
@@ -313,7 +313,6 @@ module tb_pipeline;
           7'b0000011:  // LW
           $display("ETAPA MEM: Valor na Memoria de Dados = %0d || Posicao da mem_dados = %0d", uut.data_mem[uut.EX_alu_result >> 2], (uut.EX_alu_result >> 2));
         endcase
-        $display("EX_Regwrite: %0d  || MEM_Regwrite: %0d", uut.EX_regwrite, uut.MEM_regwrite);
 
         pc_anterior = uut.PC;
         $display("----------------------------------");

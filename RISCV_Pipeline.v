@@ -23,37 +23,44 @@ module RISCV_Pipeline (
   // ID
   reg [31:0] ID_instr, ID_PC, ID_r1, ID_r2;
   reg [4:0]  ID_indiceR1, ID_indiceR2, ID_rd;
-  reg [19:0] ID_imm, branch_valor;
+  reg [19:0] ID_imm;
   reg [6:0]  ID_opcode, ID_funct7;
   reg [2:0]  ID_funct3;
   reg [31:0] link;
-  reg        ID_regwrite;
+  reg ID_regwrite;
+  reg ID_MemRead;
+  reg ID_MemWrite;
+  reg flag_jump;
 
   // EX
-  reg [31:0] EX_instr, EX_alu_result, EX_r2;
+  reg [31:0] EX_instr, EX_alu_result, EX_r1, EX_r2;
   reg [4:0]  EX_rd;
   reg [6:0]  EX_opcode;
   reg [19:0] EX_imm;
   reg [31:0] imm_sext, imm_shift, AUIPC_result;
+  reg EX_regwrite;
+  reg EX_MemRead;
+  reg EX_MemWrite;
 
   // MEM
   reg [31:0] MEM_instr, MEM_data;
   reg [4:0]  MEM_rd;
   reg [6:0]  MEM_opcode;
-  reg        MEM_regwrite;
+  reg MEM_regwrite;
+  reg MEM_MemRead;
+  reg MEM_MemWrite;
 
   reg [31:0] WB_instr;
+  reg [31:0] WB_data;
+  reg [4:0]  WB_rd;
+  reg WB_regwrite; 
+  reg WB_MemRead;
+  reg WB_MemWrite;
 
   //=======================
   // Contador de Programa
   //=======================
   reg [31:0] PC;
-
-  //=======================
-  // Sinais de Controle
-  //=======================
-  reg EX_salto_cond, flag_jump;
-  reg EX_regwrite;
 
   //=======================
   // Sinais Intermediarios
@@ -63,67 +70,6 @@ module RISCV_Pipeline (
   reg         bge_taken, blt_taken;
 
   //=======================
-  // Forwarding Logic
-  //=======================
-  wire fwdEX_r1 = EX_regwrite  && (EX_rd == ID_indiceR1) && (EX_rd != 0);
-  wire fwdWB_r1 = MEM_regwrite && (MEM_rd == ID_indiceR1) && !fwdEX_r1 && (MEM_rd != 0);
-  wire fwdEX_r2 = EX_regwrite  && (EX_rd == ID_indiceR2) && (EX_rd != 0);
-  wire fwdWB_r2 = MEM_regwrite && (MEM_rd == ID_indiceR2) && !fwdEX_r2 && (MEM_rd != 0);
-
-  //=======================
-  // Seleção de operandos para ULA (ALU Mux)
-  //=======================
-  wire [31:0] alu_in1 = fwdEX_r1 ? EX_alu_result :
-                        fwdWB_r1 ? MEM_data :
-                        ID_r1;
-
-  wire [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
-                          ID_imm :
-                        fwdEX_r2 ? EX_alu_result :
-                        fwdWB_r2 ? MEM_data :
-                        ID_r2;
-
-  //=======================
-  // Estagio EX: ULA
-  //=======================
-  always @(*) begin
-    alu_result    = 0;
-
-    case (ID_opcode)
-      7'b0110011: begin // R-Type
-        case (ID_funct7)
-          7'b0000000: alu_result = alu_in1 + alu_in2;
-          7'b0000001: alu_result = alu_in1 * alu_in2;
-          7'b0100000: alu_result = alu_in1 - alu_in2;
-          default:    alu_result = 0;
-        endcase
-      end
-
-      7'b0010011,  // ADDI
-      7'b0000011,  // LW
-      7'b0100011:  // SW
-        alu_result = alu_in1 + ID_imm;
-
-      7'b0010111: // AUIPC
-        alu_result = imm_shift + ID_PC;
-
-      7'b1100011: begin // Branch
-        bge_taken     = (ID_funct3 == 3'b101) && (alu_in1 >= alu_in2);
-        blt_taken     = (ID_funct3 == 3'b100) && (alu_in1 <  alu_in2);
-        branch_taken  = bge_taken || blt_taken;
-        branch_target = ID_PC + ID_imm;
-      end
-
-      default: begin
-        alu_result    = 0;
-        branch_taken  = 0;
-        branch_target = 0;
-      end
-    endcase
-  end
-
-  
-    //=======================
   // Cache de Instruções (direta, 4 linhas)
   //=======================
   reg [31:0] instr_cache_data [0:3];  // Dados da cache
@@ -142,6 +88,36 @@ module RISCV_Pipeline (
 
   wire [1:0]  data_cache_index = EX_alu_result[3:2];   // Indexa 4 linhas
   wire [27:0] data_cache_tag_addr = EX_alu_result[31:4]; // Tag
+
+
+  //=======================
+  // Forwarding Logic
+  //=======================
+  wire fwdEX_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
+  wire fwdEX_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
+
+  wire fwdMEM_r1 = MEM_regwrite && (MEM_rd == ID_indiceR1) && (MEM_rd != 0);
+  wire fwdMEM_r2 = MEM_regwrite && (MEM_rd == ID_indiceR2) && (MEM_rd != 0);
+
+
+  wire fwdWB_r1 = WB_regwrite  && (WB_rd == ID_indiceR1) && (WB_rd != 0);
+  wire fwdWB_r2 = WB_regwrite  && (WB_rd == ID_indiceR2) && (WB_rd != 0);
+
+  wire stall = EX_MemRead && (fwdEX_r1 || fwdEX_r2);
+
+  //=======================
+  // Seleção de operandos para ULA (ALU Mux)
+  //=======================
+  wire [31:0] alu_in1 = fwdMEM_r1 ? MEM_data :
+                        fwdWB_r1 ?  WB_data  :
+                        EX_r1;
+
+  wire [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
+                          ID_imm :
+                        fwdMEM_r2 ? MEM_data :
+                        fwdWB_r2 ?  WB_data  :
+                        EX_r2;
+
 
   //=======================
   // Atualização do PC
@@ -162,8 +138,11 @@ always @(posedge clock or posedge reset) begin
           link <= PC + 4;
       end
 
+      else if(stall)
+          PC <= PC;
+
       else
-        PC <= PC + 4;
+          PC <= PC + 4;
     end  
   end
 
@@ -222,79 +201,134 @@ always @(posedge clock or posedge reset) begin
       imm_sext     <= 0;
       imm_shift    <= 0;
       flag_jump    <= 0;
-    end else begin
-      ID_instr  <= IF_instr;
-      ID_PC     <= IF_PC;
+      ID_MemRead  <= 0;
+      ID_MemWrite <= 0;
       flag_jump <= 0;
+    end else begin
+      if(stall)begin
+        ID_instr <= ID_instr;
+        ID_PC    <= ID_PC;
+        flag_jump <= flag_jump;
+        ID_r1     <= ID_r1;
+        ID_r2     <= ID_r2;
+        ID_rd     <= ID_rd;
+        ID_imm    <= ID_imm;
+        ID_opcode <= ID_opcode;
+        ID_funct3 <= ID_funct3;
+        ID_funct7 <= ID_funct7;
+        ID_indiceR1 <= ID_indiceR1;
+        ID_indiceR2 <= ID_indiceR2;
+        ID_MemRead  <= ID_MemRead;
+        ID_MemWrite <= ID_MemWrite;
+        imm_shift   <= imm_shift;
+        imm_sext    <= imm_sext;
+      end
 
-      case (IF_instr[6:0])
-        7'b0010011, // ADDI
-        7'b0000011: begin // LW
-          ID_opcode   <= IF_instr[6:0];
-          ID_funct3   <= IF_instr[14:12];
-          ID_rd       <= IF_instr[11:7];
-          ID_indiceR1 <= IF_instr[19:15];
-          ID_r1       <= banco_regs[IF_instr[19:15]];
-          ID_imm      <= IF_instr[31:20];
-          ID_regwrite <= 1;
-        end
+      else begin
+        ID_instr  <= IF_instr;
+        ID_PC     <= IF_PC;
 
-        7'b0100011: begin // SW
-          ID_opcode   <= IF_instr[6:0];
-          ID_funct3   <= IF_instr[14:12];
-          ID_indiceR1 <= IF_instr[19:15];
-          ID_indiceR2 <= IF_instr[24:20];
-          ID_r1       <= banco_regs[IF_instr[19:15]];
-          ID_r2       <= banco_regs[IF_instr[24:20]];
-          ID_imm      <= {8'b0, IF_instr[31:25], IF_instr[11:7]};
-          ID_regwrite <= 0;
-        end
+        case (IF_instr[6:0])
+          7'b0010011: begin// ADDI
+            ID_opcode   <= IF_instr[6:0];
+            ID_funct3   <= IF_instr[14:12];
+            ID_rd       <= IF_instr[11:7];
+            ID_indiceR1 <= IF_instr[19:15];
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_imm      <= IF_instr[31:20];
+            ID_regwrite <= 1;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
 
-        7'b0110011: begin // R-Type
-          ID_opcode   <= IF_instr[6:0];
-          ID_funct3   <= IF_instr[14:12];
-          ID_funct7   <= IF_instr[31:25];
-          ID_rd       <= IF_instr[11:7];
-          ID_indiceR1 <= IF_instr[19:15];
-          ID_indiceR2 <= IF_instr[24:20];
-          ID_r1       <= banco_regs[IF_instr[19:15]];
-          ID_r2       <= banco_regs[IF_instr[24:20]];
-          ID_regwrite <= 1;
-        end
+          7'b0000011: begin //LW
+            ID_opcode   <= IF_instr[6:0];
+            ID_funct3   <= IF_instr[14:12];
+            ID_rd       <= IF_instr[11:7];
+            ID_indiceR1 <= IF_instr[19:15];
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_imm      <= IF_instr[31:20];
+            ID_regwrite <= 1;
+            ID_MemRead  <= 1;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
 
-        7'b1100011: begin // bge e blt
-          ID_imm        <= {IF_instr[31:25], IF_instr[11:7]};
-          ID_indiceR2   <= IF_instr[24:20];
-          ID_indiceR1   <= IF_instr[19:15];
-          ID_r2         <= banco_regs[IF_instr[24:20]];
-          ID_r1         <= banco_regs[IF_instr[19:15]];
-          ID_funct3     <= IF_instr[14:12];
-          ID_opcode     <= IF_instr[6:0];
-          ID_regwrite   <= 0;
-        end
+          7'b0100011: begin // SW
+            ID_opcode   <= IF_instr[6:0];
+            ID_funct3   <= IF_instr[14:12];
+            ID_indiceR1 <= IF_instr[19:15];
+            ID_indiceR2 <= IF_instr[24:20];
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_r2       <= banco_regs[IF_instr[24:20]];
+            ID_imm      <= {8'b0, IF_instr[31:25], IF_instr[11:7]};
+            ID_regwrite <= 0;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 1;
+            flag_jump <= 0;
+          end
 
-        7'b1101111: begin // jal
-          ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21]};
-          ID_rd         <= IF_instr[11:7];
-          ID_opcode     <= IF_instr[6:0];
-          ID_regwrite   <= 1;
-          flag_jump     <= 1;
-        end
+          7'b0110011: begin // R-Type
+            ID_opcode   <= IF_instr[6:0];
+            ID_funct3   <= IF_instr[14:12];
+            ID_funct7   <= IF_instr[31:25];
+            ID_rd       <= IF_instr[11:7];
+            ID_indiceR1 <= IF_instr[19:15];
+            ID_indiceR2 <= IF_instr[24:20];
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_r2       <= banco_regs[IF_instr[24:20]];
+            ID_regwrite <= 1;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
 
-        7'b0010111: begin // auipc
-          imm_sext      <= {IF_instr[31:12], 12'b0};
-          imm_shift     <= {IF_instr[31:12], 12'b0};
-          ID_PC         <= IF_PC;
-          ID_rd         <= IF_instr[11:7];
-          ID_opcode     <= IF_instr[6:0];
-          ID_regwrite   <= 1;
-        end
+          7'b1100011: begin // bge e blt
+            ID_imm        <= {IF_instr[31:25], IF_instr[11:7]};
+            ID_indiceR2   <= IF_instr[24:20];
+            ID_indiceR1   <= IF_instr[19:15];
+            ID_r2         <= banco_regs[IF_instr[24:20]];
+            ID_r1         <= banco_regs[IF_instr[19:15]];
+            ID_funct3     <= IF_instr[14:12];
+            ID_opcode     <= IF_instr[6:0];
+            ID_regwrite   <= 0;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
 
-        default: begin
-          ID_opcode     <= 0;
-          ID_regwrite   <= 0;
-        end
-      endcase
+          7'b1101111: begin // jal
+            ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21]};
+            ID_rd         <= IF_instr[11:7];
+            ID_opcode     <= IF_instr[6:0];
+            ID_regwrite   <= 1;
+            flag_jump     <= 1;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+          end
+
+          7'b0010111: begin // auipc
+            imm_sext      <= {IF_instr[31:12], 12'b0};
+            imm_shift     <= {IF_instr[31:12], 12'b0};
+            ID_PC         <= IF_PC;
+            ID_rd         <= IF_instr[11:7];
+            ID_opcode     <= IF_instr[6:0];
+            ID_regwrite   <= 1;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
+
+          default: begin
+            ID_opcode     <= 0;
+            ID_regwrite   <= 0;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 0;
+          end
+        endcase
+      end
     end
   end
 
@@ -302,33 +336,69 @@ always @(posedge clock or posedge reset) begin
   // Estagio EX
   //====================
    always @(posedge clock or posedge reset) begin
-    if (reset) begin
+    if (reset || stall) begin
       EX_instr    <= 0;
       EX_rd       <= 0;
       EX_opcode   <= 0;
       EX_regwrite <= 0;
       EX_alu_result <= 0;
+      EX_r1       <= 0;
       EX_r2       <= 0;
       EX_imm      <= 0;
-      EX_salto_cond <= 0;
+      EX_MemWrite  <= 0;
+      EX_MemRead   <= 0;
     end else begin
       EX_instr      <= ID_instr;
       EX_rd         <= ID_rd;
       EX_opcode     <= ID_opcode;
       EX_imm        <= ID_imm;
+      EX_r1         <= ID_r1;
       EX_r2         <= ID_r2;
-      EX_regwrite   <= ID_regwrite;
       EX_alu_result <= alu_result;
-
-      if (ID_opcode == 7'b1100011) begin
-        EX_salto_cond <= branch_taken;
-        branch_valor  <= branch_target;
-      end else begin
-        EX_salto_cond <= 0;
-      end
+      EX_regwrite   <= ID_regwrite;
+      EX_MemRead    <= ID_MemRead;
+      EX_MemWrite   <= ID_MemWrite;
     end
   end
 
+  //=======================
+  // ULA
+  //=======================
+  always @(*) begin
+    alu_result    = 0;
+
+    case (ID_opcode)
+      7'b0110011: begin // R-Type
+        case (ID_funct7)
+          7'b0000000: alu_result = alu_in1 + alu_in2;
+          7'b0000001: alu_result = alu_in1 * alu_in2;
+          7'b0100000: alu_result = alu_in1 - alu_in2;
+          default:    alu_result = 0;
+        endcase
+      end
+
+      7'b0010011,  // ADDI
+      7'b0000011,  // LW
+      7'b0100011:  // SW
+        alu_result = alu_in1 + ID_imm;
+
+      7'b0010111: // AUIPC
+        alu_result = imm_shift + ID_PC;
+
+      7'b1100011: begin // Branch
+        bge_taken     = (ID_funct3 == 3'b101) && (alu_in1 >= alu_in2);
+        blt_taken     = (ID_funct3 == 3'b100) && (alu_in1 <  alu_in2);
+        branch_taken  = bge_taken || blt_taken;
+        branch_target = ID_PC + ID_imm;
+      end
+
+      default: begin
+        alu_result    = 0;
+        branch_taken  = 0;
+        branch_target = 0;
+      end
+    endcase
+  end
 
   //====================
   // Estagio MEM
@@ -340,33 +410,44 @@ always @(posedge clock or posedge reset) begin
       MEM_rd      <= 0;
       MEM_opcode  <= 0;
       MEM_regwrite <= 0;
+      MEM_MemWrite  <= 0;
+      MEM_MemRead   <= 0;
     end else begin
-      MEM_instr   <= EX_instr;
-      MEM_rd      <= EX_rd;
-      MEM_opcode  <= EX_opcode;
-      MEM_regwrite <= EX_regwrite;
-
-      if (EX_opcode == 7'b0000011) begin // LW
-        // Leitura da cache de dados
-        if (data_cache_valid[data_cache_index] && data_cache_tag[data_cache_index] == data_cache_tag_addr) begin
-          // Cache hit
-          MEM_data <= data_cache_data[data_cache_index];
-        end else begin
-          // Cache miss: acessa memória principal e atualiza cache
-          data_cache_data[data_cache_index]  <= data_mem[EX_alu_result >> 2]; // 16 bits por posição
-          data_cache_tag[data_cache_index]   <= data_cache_tag_addr;
-          data_cache_valid[data_cache_index] <= 1;
-          MEM_data <= data_mem[EX_alu_result >> 2];
-        end
-      end else if (EX_opcode == 7'b0100011) begin // SW
-        // Escrita direta na memoria principal
-        data_mem[EX_alu_result >> 2] <= EX_r2[15:0];
-
-        // Invalida a linha da cache correspondente (write-through + no write-allocate)
-        data_cache_valid[data_cache_index] <= 0;
-      end else begin
-        MEM_data <= EX_alu_result; // Para instruções tipo R, ADDI e AUIPC
+      MEM_instr      <= EX_instr;
+      MEM_rd         <= EX_rd;
+      MEM_opcode     <= EX_opcode;
+      MEM_regwrite   <= EX_regwrite;
+      MEM_MemRead    <= EX_MemRead;
+      MEM_MemWrite   <= EX_MemWrite;
+      if(EX_MemRead)begin //LW
+        case (EX_opcode)
+          7'b0000011:begin
+              // Leitura da cache de dados
+              if (data_cache_valid[data_cache_index] && data_cache_tag[data_cache_index] == data_cache_tag_addr) begin
+                // Cache hit
+                MEM_data <= data_cache_data[data_cache_index];
+              end else begin
+                // Cache miss: acessa memória principal e atualiza cache
+                data_cache_data[data_cache_index]  <= data_mem[EX_alu_result >> 2]; // 16 bits por posição
+                data_cache_tag[data_cache_index]   <= data_cache_tag_addr;
+                data_cache_valid[data_cache_index] <= 1;
+                MEM_data <= data_mem[EX_alu_result >> 2];
+              end
+          end
+        endcase
       end
+      else if(EX_MemWrite) begin //SW
+        case(EX_opcode)
+          7'b0100011:begin
+          // Escrita direta na memoria principal
+          data_mem[EX_alu_result >> 2] <= EX_r2[15:0];
+          // Invalida a linha da cache correspondente (write-through + no write-allocate)
+          data_cache_valid[data_cache_index] <= 0;
+          end
+        endcase
+      end
+      else
+        MEM_data <= EX_alu_result; // Para instruções tipo R, ADDI e AUIPC
     end
   end
 
@@ -376,12 +457,18 @@ always @(posedge clock or posedge reset) begin
   //====================
     always @(posedge clock or posedge reset) begin
     if (reset) begin
-      WB_instr <= 32'b0;
+      WB_instr <= 0;
+      WB_rd    <= 0;
+      WB_data  <= 0;
+      WB_regwrite <= 0;
     end else begin
       WB_instr <= MEM_instr;
+      WB_data  <= MEM_data;
+      WB_rd    <= MEM_rd;
+      WB_regwrite <= MEM_regwrite;
       if (MEM_regwrite && MEM_rd != 0) begin
         banco_regs[MEM_rd] <= MEM_data;
-        register_address   <= banco_regs[1]; // x1
+        register_address   <= link;
       end
     end
   end

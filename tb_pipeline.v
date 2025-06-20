@@ -322,6 +322,8 @@ module tb_pipeline;
           7'b0000011:  // LW
           $display("ETAPA MEM: Valor na Memoria de Dados = %0d || Posicao da mem_dados = %0d", uut.data_mem[uut.EX_alu_result >> 2], (uut.EX_alu_result >> 2));
         endcase
+        $display("Valor de ID_r2: %0d || read_ID_r2: %0d", uut.ID_r2, uut.read_ID_r2);
+        $display("WB_DATA: %0d", uut.WB_data);
         /*$display("====================================================");
           $display("Valor de EX_alu_result               : %0d", uut.EX_alu_result);
           $display("Valor do dado(posicao EX_alu_result) : %0d", uut.data_mem[uut.EX_alu_result >> 2]);

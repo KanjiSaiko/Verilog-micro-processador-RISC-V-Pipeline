@@ -105,11 +105,8 @@ module RISCV_Pipeline (
   //=======================================
   // Hazard para Leitura Após Escrita (RAW)
   //=======================================
-  wire hazard_EX_to_SW = EX_MemRead && (EX_rd == ID_indiceR2) && (EX_rd != 0);
-  wire hazard_MEM_to_SW = MEM_MemRead && (MEM_rd == ID_indiceR2) && (MEM_rd != 0);
-  wire stall_for_sw = (ID_opcode == 7'b0100011) && (hazard_EX_to_SW || hazard_MEM_to_SW);
 
-  wire [31:0] read_ID_r1 = (EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0)) ? EX_alu_result :
+  /*wire [31:0] read_ID_r1 = (EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0)) ? EX_alu_result :
                (MEM_regwrite && (MEM_rd == ID_indiceR1) && (MEM_rd != 0)) ? data_to_forward_from_mem : 
                 (WB_regwrite && (WB_rd == ID_indiceR1) && (WB_rd != 0)) ? WB_data :
                 banco_regs[IF_instr[19:15]]; // CAMINHO NORMAL: Pega o dado que já está lá
@@ -117,11 +114,13 @@ module RISCV_Pipeline (
   wire [31:0] read_ID_r2 = (EX_regwrite && !EX_MemRead && (EX_rd == ID_indiceR2) && (EX_rd != 0)) ? EX_alu_result :
                (MEM_regwrite && (MEM_rd == ID_indiceR2) && (MEM_rd != 0)) ? data_to_forward_from_mem :
                (WB_regwrite && (WB_rd == ID_indiceR2) && (WB_rd != 0)) ? WB_data :
-                banco_regs[IF_instr[24:20]]; // CAMINHO NORMAL: Pega o dado que já está lá
+                banco_regs[IF_instr[24:20]]; // CAMINHO NORMAL: Pega o dado que já está lá*/
 
   //=======================
   // Forwarding Logic
   //=======================
+  // Forwarding do dado de um Store (WB -> EX)
+  wire fwd_WB_to_EX_for_StoreData = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
   wire fwdEX_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
   wire fwdEX_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
 
@@ -131,22 +130,23 @@ module RISCV_Pipeline (
 
   wire fwdWB_r1 = WB_regwrite  && (WB_rd == ID_indiceR1) && (WB_rd != 0);
   wire fwdWB_r2 = WB_regwrite  && (WB_rd == ID_indiceR2) && (WB_rd != 0);
-  wire stall_for_lw =  EX_MemRead && (fwdEX_r1 || fwdEX_r2);
-
-  wire stall = stall_for_lw || stall_for_sw;
+  wire stall =  EX_MemRead && (fwdEX_r1 || fwdEX_r2);
+  
 
   //=======================
   // Seleção de operandos para ULA (ALU Mux)
   //=======================
   wire [31:0] alu_in1 = fwdMEM_r1 ? data_to_forward_from_mem :
-                        fwdWB_r1 ?  WB_data                  :
-                        EX_r1;
+                        fwdWB_r1  ? WB_data                  :
+                        ID_r1;
 
   wire [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
                           ID_imm :
                         fwdMEM_r2 ? data_to_forward_from_mem :
                         fwdWB_r2 ?  WB_data                  :
-                        EX_r2;
+                        ID_r2;
+  wire [31:0] data_to_SW;
+  assign data_to_SW = fwd_WB_to_EX_for_StoreData ? MEM_data : banco_regs[IF_instr[24:20]];
 
 
   //=======================
@@ -220,7 +220,7 @@ module RISCV_Pipeline (
   // Estagio ID: Decodificação
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || branch_taken || flag_jump) begin
+    if (reset || (branch_taken && !stall) || flag_jump) begin
       ID_instr     <= 0;
       ID_PC        <= 0;
       ID_r1        <= 0;
@@ -268,7 +268,7 @@ module RISCV_Pipeline (
             ID_funct3   <= IF_instr[14:12];
             ID_rd       <= IF_instr[11:7];
             ID_indiceR1 <= IF_instr[19:15];
-            ID_r1       <= read_ID_r1;
+            ID_r1       <= banco_regs[IF_instr[19:15]];
             ID_imm      <= IF_instr[31:20];
             ID_regwrite <= 1;
             ID_MemRead  <= 0;
@@ -281,7 +281,7 @@ module RISCV_Pipeline (
             ID_funct3   <= IF_instr[14:12];
             ID_rd       <= IF_instr[11:7];
             ID_indiceR1 <= IF_instr[19:15];
-            ID_r1       <= read_ID_r1;
+            ID_r1       <= banco_regs[IF_instr[19:15]];
             ID_imm      <= IF_instr[31:20];
             ID_regwrite <= 1;
             ID_MemRead  <= 1;
@@ -294,9 +294,9 @@ module RISCV_Pipeline (
             ID_funct3   <= IF_instr[14:12];
             ID_indiceR1 <= IF_instr[19:15];
             ID_indiceR2 <= IF_instr[24:20];
-            ID_r1       <= read_ID_r1;
-            ID_r2       <= read_ID_r2;
-            ID_imm      <= {8'b0, IF_instr[31:25], IF_instr[11:7]};
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_r2       <= data_to_SW;
+            ID_imm      <= {IF_instr[31:25], IF_instr[11:7]};
             ID_regwrite <= 0;
             ID_MemRead  <= 0;
             ID_MemWrite <= 1;
@@ -310,8 +310,8 @@ module RISCV_Pipeline (
             ID_rd       <= IF_instr[11:7];
             ID_indiceR1 <= IF_instr[19:15];
             ID_indiceR2 <= IF_instr[24:20];
-            ID_r1       <= read_ID_r1;
-            ID_r2       <= read_ID_r2;
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_r2       <= banco_regs[IF_instr[24:20]];
             ID_regwrite <= 1;
             ID_MemRead  <= 0;
             ID_MemWrite <= 0;
@@ -319,11 +319,11 @@ module RISCV_Pipeline (
           end
 
           7'b1100011: begin // bge e blt
-            ID_imm        <= {IF_instr[31:25], IF_instr[11:7]};
+            ID_imm        <= {IF_instr[31], IF_instr[7], IF_instr[30:25], IF_instr[11:8], 1'b0};
             ID_indiceR2   <= IF_instr[24:20];
             ID_indiceR1   <= IF_instr[19:15];
-            ID_r1         <= read_ID_r1;
-            ID_r2         <= read_ID_r2;
+            ID_r1         <= banco_regs[IF_instr[19:15]];
+            ID_r2         <= banco_regs[IF_instr[24:20]];
             ID_funct3     <= IF_instr[14:12];
             ID_opcode     <= IF_instr[6:0];
             ID_regwrite   <= 0;

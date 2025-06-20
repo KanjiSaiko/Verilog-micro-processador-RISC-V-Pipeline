@@ -141,15 +141,16 @@ module tb_pipeline;
           7'b0010011: begin
             $display("Instrução IF  %b  -  ADDI", uut.IF_instr);
           end
-          7'b1100011:
+          7'b1100011:begin //saltos
             case (uut.IF_instr[14:12])
               3'b101: begin
                 $display("Instrução IF  %b  -  BGE", uut.IF_instr);
               end
               3'b100: begin
-                $display("Instrução IF  %b  -  BLT x%0d, x%0d, %0d", uut.IF_instr, uut.IF_instr[19:15], uut.IF_instr[24:20], {uut.IF_instr[31:25], uut.IF_instr[11:7]});
+                $display("Instrução IF  %b  -  BLT x%0d, x%0d, %0d", uut.IF_instr, uut.IF_instr[19:15], uut.IF_instr[24:20], {uut.IF_instr[31], uut.IF_instr[7], uut.IF_instr[30:25], uut.IF_instr[11:8], 1'b0});
               end
             endcase
+          end
           7'b1101111: begin
             $display("Instrução IF  %b  -  JAL x%0d, %0d", uut.IF_instr, uut.IF_instr[11:7], {uut.IF_instr[31], uut.IF_instr[19:12], uut.IF_instr[20], uut.IF_instr[30:21], 1'b0});
           end
@@ -289,6 +290,15 @@ module tb_pipeline;
           default: $display("Instrução WB  %b", uut.WB_instr);
         endcase
       //PRINTS DAS OPERAÇOES
+        case(uut.IF_instr[6:0])
+          7'b0100011:begin//sw
+            $display("SW - ETAPA ID: ID_r2 = banco_regs[%0d] = %0d", uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
+            $display("fwd_WB_to_EX_for_StoreData: %0d   ||  data_to_sw: %0d  ||  MEM_data: %0d  ||  REGS: %0d", uut.fwd_WB_to_EX_for_StoreData, uut.data_to_SW, uut.MEM_data, uut.banco_regs[uut.IF_instr[24:20]]);
+          end
+          7'b1100011: //blt/bge
+          $display("BLT - Etapa ID: id_r1: banco_regs[%0d] = %0d  ||  id_r2: banco_regs[%0d] = %0d",uut.IF_instr[19:15], uut.banco_regs[uut.IF_instr[19:15]], uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
+        endcase
+
         case (uut.ID_opcode)
           7'b0110011: begin // R-Type
           $display("R-TYPE:");
@@ -300,11 +310,16 @@ module tb_pipeline;
           end
 
           7'b0010011,  // ADDI
-          7'b0000011,  // LW
+          7'b0000011:begin  // LW
+          end
+
           7'b0100011:begin  // SW
-          $display("I-Type");
-          $display("ULA: %0d + %0d = %0d", uut.alu_in1, uut.ID_imm, (uut.alu_result));
-          $display("ETAPA EX: EX-ALURESULT = %0d", uut.EX_alu_result);
+          $display("SW - ETAPA EX: Valor de reg[%0d] no endereço [%0d]",  uut.EX_rd, uut.EX_alu_result>>2);
+          $display("Soma do offset: %0d + %0d = %0d", uut.alu_in1, uut.ID_imm, uut.alu_result);
+          //$display("Instrução: %b", uut.IF_instr);
+          //$display("I-Type");
+          //$display("ULA: %0d + %0d = %0d", uut.alu_in1, uut.ID_imm, (uut.alu_result));
+          //$display("ETAPA EX: EX-ALURESULT = %0d", uut.EX_alu_result);
           end
 
           7'b1101111: begin //JAL
@@ -316,14 +331,14 @@ module tb_pipeline;
         case (uut.EX_opcode)
           7'b0010011,  // ADDI
           7'b0100011:begin  // SW
-          $display("ETAPA MEM: MEM_data = %0d || Reg Destino = %0d", uut.MEM_data, uut.MEM_rd);
+          $display("SW - ETAPA MEM: Mem_data[%0d] = %0d", uut.EX_alu_result >> 2, uut.EX_r2);
           end
 
           7'b0000011:  // LW
-          $display("ETAPA MEM: Valor na Memoria de Dados = %0d || Posicao da mem_dados = %0d", uut.data_mem[uut.EX_alu_result >> 2], (uut.EX_alu_result >> 2));
+          $display("LW - ETAPA MEM: Mem_data[%0d] = %0d", (uut.EX_alu_result >> 2), uut.MEM_data);
         endcase
-        $display("Valor de ID_r2: %0d || read_ID_r2: %0d", uut.ID_r2, uut.read_ID_r2);
-        $display("WB_DATA: %0d", uut.WB_data);
+
+        $display("Valor de ID_r1: %0d  || EX_r1: %0d", uut.ID_r1, uut.EX_r1);
         /*$display("====================================================");
           $display("Valor de EX_alu_result               : %0d", uut.EX_alu_result);
           $display("Valor do dado(posicao EX_alu_result) : %0d", uut.data_mem[uut.EX_alu_result >> 2]);
@@ -348,7 +363,7 @@ module tb_pipeline;
             $display("BRANCH BGE detectado na etapa ID");
           else
             $display("BRANCH BLT detectado na etapa ID");
-
+          $display("Valor de ID_r1: %0d  ||  Valor de ID_r2: %0d", uut.ID_r1, uut.ID_r2);
           $display("Comparando rs1: %d     rs2: %d", uut.alu_in1, uut.alu_in2);
           $display("Resultado da comparação: %s", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
           $display("PC alvo: %d", uut.branch_target);

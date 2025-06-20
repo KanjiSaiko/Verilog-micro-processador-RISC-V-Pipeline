@@ -127,6 +127,18 @@ always @(posedge clock or posedge reset) begin
       PC               <= 0;
       register_address <= 0;
       link             <= 0;
+      for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
+      // Invalida a cache
+      for (i = 0; i < 4; i = i + 1) begin
+        instr_cache_valid[i] <= 0;
+        instr_cache_tag[i]   <= 0;
+        instr_cache_data[i]  <= 0;
+      end
+      for (i = 0; i < 4; i = i + 1) begin
+        data_cache_valid[i] <= 0;
+        data_cache_tag[i]   <= 0;
+        data_cache_data[i]  <= 0;
+      end
 
     end else begin
       if (branch_taken == 1) begin //BGE/BLT
@@ -150,21 +162,9 @@ always @(posedge clock or posedge reset) begin
   // Estagio IF: Busca de instrução
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset) begin
+    if (reset || flag_jump) begin
       IF_instr <= 0;
       IF_PC    <= 0;
-      for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
-      // Invalida a cache
-      for (i = 0; i < 4; i = i + 1) begin
-        instr_cache_valid[i] <= 0;
-        instr_cache_tag[i]   <= 0;
-        instr_cache_data[i]  <= 0;
-      end
-      for (i = 0; i < 4; i = i + 1) begin
-        data_cache_valid[i] <= 0;
-        data_cache_tag[i]   <= 0;
-        data_cache_data[i]  <= 0;
-      end
     end else begin
       IF_PC <= PC;
 
@@ -185,7 +185,7 @@ always @(posedge clock or posedge reset) begin
   // Estagio ID: Decodificação
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || branch_taken || ID_opcode == 7'b1101111) begin
+    if (reset || branch_taken || flag_jump) begin
       ID_instr     <= 0;
       ID_PC        <= 0;
       ID_r1        <= 0;
@@ -299,7 +299,7 @@ always @(posedge clock or posedge reset) begin
           end
 
           7'b1101111: begin // jal
-            ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21]};
+            ID_imm        <= {IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21], 1'b0};
             ID_rd         <= IF_instr[11:7];
             ID_opcode     <= IF_instr[6:0];
             ID_regwrite   <= 1;

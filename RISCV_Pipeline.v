@@ -21,7 +21,7 @@ module RISCV_Pipeline (
 
   // ID
   reg [31:0] ID_instr, ID_PC, ID_r1, ID_r2;
-  reg [4:0]  ID_indiceR1, ID_indiceR2, ID_rd;
+  reg [4:0]  ID_indiceR1, ID_indiceR2, ID_rd, ID_shamt;
   reg signed [31:0] ID_imm;
   reg [6:0]  ID_opcode, ID_funct7;
   reg [2:0]  ID_funct3;
@@ -228,6 +228,7 @@ module RISCV_Pipeline (
       flag_jump    <= 0;
       ID_MemRead  <= 0;
       ID_MemWrite <= 0;
+      ID_shamt    <= 0;
     end else begin
       if(stall)begin
         ID_instr <= ID_instr;
@@ -246,6 +247,7 @@ module RISCV_Pipeline (
         ID_MemWrite <= ID_MemWrite;
         imm_shift   <= imm_shift;
         imm_sext    <= imm_sext;
+        ID_shamt    <= ID_shamt;
       end
 
       else begin
@@ -253,7 +255,7 @@ module RISCV_Pipeline (
         ID_PC     <= IF_PC;
 
         case (IF_instr[6:0])
-          7'b0010011: begin// ADDI
+          7'b0010011: begin// ADDI e SLRI
             ID_opcode   <= IF_instr[6:0];
             ID_funct3   <= IF_instr[14:12];
             ID_rd       <= IF_instr[11:7];
@@ -264,6 +266,8 @@ module RISCV_Pipeline (
             ID_MemRead  <= 0;
             ID_MemWrite <= 0;
             flag_jump <= 0;
+            if(IF_instr[14:12] == 101) //se for slri utiliza o shamt
+              ID_shamt <= IF_instr[24:20];
           end
 
           7'b0000011: begin //LW
@@ -422,11 +426,18 @@ module RISCV_Pipeline (
           7'b0000000: alu_result = alu_in1 + alu_in2;
           7'b0000001: alu_result = alu_in1 * alu_in2;
           7'b0100000: alu_result = alu_in1 - alu_in2;
-          default:    alu_result = 0;
         endcase
       end
 
-      7'b0010011,  // ADDI
+      7'b0010011:begin  // ADDI e SLRI
+        case(ID_funct3)
+          3'b101:
+            alu_result = alu_in1 >> ID_shamt;
+          3'b000:
+            alu_result = alu_in1 + ID_imm;
+        endcase
+      end
+      
       7'b0000011,  // LW
       7'b0100011:  // SW
         alu_result = alu_in1 + ID_imm;

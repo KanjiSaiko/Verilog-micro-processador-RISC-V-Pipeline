@@ -36,7 +36,6 @@ module RISCV_Pipeline (
   reg [6:0]  EX_opcode, EX_funct7;
   reg signed [31:0] EX_imm;
   reg [2:0]  EX_funct3;
-  reg [31:0] imm_sext, imm_shift, AUIPC_result;
   reg EX_regwrite;
   reg EX_MemRead;
   reg EX_MemWrite;
@@ -223,8 +222,6 @@ module RISCV_Pipeline (
       ID_funct3    <= 0;
       ID_funct7    <= 0;
       ID_regwrite  <= 0;
-      imm_sext     <= 0;
-      imm_shift    <= 0;
       flag_jump    <= 0;
       ID_MemRead  <= 0;
       ID_MemWrite <= 0;
@@ -245,8 +242,6 @@ module RISCV_Pipeline (
         ID_indiceR2 <= ID_indiceR2;
         ID_MemRead  <= ID_MemRead;
         ID_MemWrite <= ID_MemWrite;
-        imm_shift   <= imm_shift;
-        imm_sext    <= imm_sext;
         ID_shamt    <= ID_shamt;
       end
 
@@ -266,7 +261,7 @@ module RISCV_Pipeline (
             ID_MemRead  <= 0;
             ID_MemWrite <= 0;
             flag_jump <= 0;
-            if(IF_instr[14:12] == 101) //se for slri utiliza o shamt
+            if(IF_instr[14:12] == 101 || IF_instr[14:12] == 001) //se for slri utiliza o shamt
               ID_shamt <= IF_instr[24:20];
           end
 
@@ -328,7 +323,7 @@ module RISCV_Pipeline (
             flag_jump <= 0;
           end
 
-          7'b1100011: begin // bge | blt | bne | beq
+          7'b1100011: begin // Tipo B
             ID_imm        <= {{20{IF_instr[31]}}, IF_instr[7], IF_instr[30:25], IF_instr[11:8], 1'b0};
             ID_indiceR2   <= IF_instr[24:20];
             ID_indiceR1   <= IF_instr[19:15];
@@ -355,9 +350,9 @@ module RISCV_Pipeline (
             ID_MemWrite <= 0;
           end
 
-          7'b0010111: begin // auipc
-            imm_sext      <= {IF_instr[31:12], 12'b0};
-            imm_shift     <= {IF_instr[31:12], 12'b0};
+          7'b0010111, //TIPO U  - AUIPC
+          7'b0110111: begin // LUI
+            ID_imm        <= {IF_instr[31:12], 12'b0};
             ID_PC         <= IF_PC;
             ID_rd         <= IF_instr[11:7];
             ID_opcode     <= IF_instr[6:0];
@@ -429,10 +424,12 @@ module RISCV_Pipeline (
         endcase
       end
 
-      7'b0010011:begin  // ADDI e SLRI
+      7'b0010011:begin  // ADDI e SRLI e SLLI
         case(ID_funct3)
           3'b101:
             alu_result = alu_in1 >> ID_shamt;
+          3'b001:
+            alu_result = alu_in1 << ID_shamt;
           3'b000:
             alu_result = alu_in1 + ID_imm;
         endcase
@@ -443,8 +440,10 @@ module RISCV_Pipeline (
         alu_result = alu_in1 + ID_imm;
 
       7'b0010111: // AUIPC
-        alu_result = imm_shift + ID_PC;
-      
+        alu_result = ID_imm + ID_PC;
+      7'b0110111: //LUI
+        alu_result = ID_imm;
+
       7'b1101111,  //JAL
       7'b1100111:  //JALR
         alu_result = ID_PC + 4;

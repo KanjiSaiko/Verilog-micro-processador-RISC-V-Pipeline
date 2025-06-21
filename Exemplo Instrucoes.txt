@@ -1,21 +1,27 @@
 opcodes / tipos:
 0010111 -> AUIPC / u
+0110111 -> LUI   / u
 0010011 -> ADDI	 / i
+0010011 -> SRLI  / i
+0010011 -> SLLI  / i
 0110011 -> ADD	 / r
-1100011 -> BGE	 / b
-1100011 -> BLT	 / b
+1100011 -> BLT   / b
+1100011 -> BNE   / b
+1100011 -> BGE   / b
+1100011 -> BEQ   / b
 1101111 -> JAL	 / j
+1100111 -> JALR  / i
 0000011 -> LW 	 / i
 0110011 -> MUL 	 / r
 0100011 -> SW 	 / s
 0110011 -> SUB 	 / r
-1111111 -> NAO FAZ NADA
 
 funct3:
 000 -> add, addi, sub, mul
 010 -> lw, sw
 100 -> blt
-101 -> bge
+101 -> bge e slri
+001 -> bne, slli
 
 funct7:
 0000000 -> add

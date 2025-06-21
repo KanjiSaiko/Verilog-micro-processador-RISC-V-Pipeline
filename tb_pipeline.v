@@ -46,24 +46,54 @@ module tb_pipeline;
       uut.data_mem[3] = 32'd58;
       // Algoritmo Mergesort para 4 elementos
       // Formato: uut.instr_mem[index] = 32'b...;
-
-
-      // inicializa x1 = 3
-    uut.instr_mem[0] = 32'b00000000001100000000000010010011; // addi x1, x0, 3
-
-    // grava x2 = 0 (usado como valor de comparação)
-    uut.instr_mem[1] = 32'b00000000000000000000000100010011; // addi x2, x0, 0
-
-    //loop:
-    // decrementa x1
-    uut.instr_mem[2] = 32'b11111111111100001000000010010011; // addi x1, x1, -1
-
-    // se x1 != x2, branch para loop (offset -4 bytes)
-    uut.instr_mem[3] = 32'b11111110001000001001111011100011; // bne x1, x2, -4
-
-    // após sair do loop, faz JAL com offset -16 bytes (volta ao instr_mem[0])
-    uut.instr_mem[4] = 32'b11111111000111111111000001101111; // jal x0, -16
       // --- Código de Máquina ---
+      // ======================= main =======================
+      // PC=0x000: Inicializa o ponteiro da pilha (sp = x2) para um endereço alto.
+      uut.instr_mem[0] = 32'b00001111110000000000000100010011; // addi sp, zero, 252
+      // PC=0x004: Inicializa o contador de recursão (t0 = x5) em 3.
+      uut.instr_mem[1] = 32'b00000000001100000000001010010011; // addi t0, zero, 3
+      // PC=0x008: Chama a função 'ping'. Salva o endereço de retorno (0x0C) em ra.
+      uut.instr_mem[2] = 32'b00000000110000000000000011101111; // jal ra, 12 (Alvo: 24)
+      // PC=0x00C: Fim do programa. Loop infinito para parar.
+      uut.instr_mem[3] = 32'b00000000000000000000000001101111; // jal zero, 0
+
+      // ======================= Função ping =======================
+      // PC=20: NOP para alinhamento (opcional, mas boa prática).
+      uut.instr_mem[4] = 32'b00000000000000000000000000010011; // addi zero, zero, 0
+      // PC=24: (ping) Base da recursão. Se t0 == 0, pula para o retorno.
+      uut.instr_mem[5] = 32'b00000000000000101000111001100011; // beq t0, zero, 28 (Alvo: 0x30, ping_ret)
+      // PC=28: Salva o ra na pilha. Primeiro, abre espaço.
+      uut.instr_mem[6] = 32'b11111111110000010000000100010011; // addi sp, sp, -4
+      // PC=32: Guarda o valor de ra no topo da pilha.
+      uut.instr_mem[7] = 32'b00000000000100010010000000100011; // sw ra, 0(sp)
+      // PC=36: Decrementa o contador.
+      uut.instr_mem[8] = 32'b11111111111100101000001010010011; // addi t0, t0, -1
+      // PC=40: Chama a função 'pong'. Salva o novo retorno (0x28) em ra.
+      uut.instr_mem[9] = 32'b00000001000000000000000011101111; // jal ra, 16 (Alvo: 0x34)
+      // PC=44: Restaura o 'ra' original da pilha para poder retornar ao chamador certo.
+      uut.instr_mem[10] = 32'b00000000000000010010000010000011; // lw ra, 0(sp)
+      // PC=48: Limpa a pilha.
+      uut.instr_mem[11] = 32'b00000000010000010000000100010011; // addi sp, sp, 4
+      // PC=50: (ping_ret) Retorna para quem chamou 'ping'.
+      uut.instr_mem[12] = 32'b00000000000000001000000001100111; // jalr zero, 0(ra)
+
+      // ======================= Função pong =======================
+      // PC=0x034: (pong) Base da recursão. Se t0 == 0, pula para o retorno.
+      uut.instr_mem[13] = 32'b00000000000000101000111001100011; // beq t0, zero, 28 (Alvo: 0x50, pong_ret)
+      // PC=0x038: Salva o ra na pilha.
+      uut.instr_mem[14] = 32'b11111111110000010000000100010011; // addi sp, sp, -4
+      // PC=0x03C: Guarda o valor de ra no topo da pilha.
+      uut.instr_mem[15] = 32'b00000000000100010010000000100011; // sw ra, 0(sp)
+      // PC=0x040: Decrementa o contador.
+      uut.instr_mem[16] = 32'b11111111111100101000001010010011; // addi t0, t0, -1
+      // PC=0x044: *** SALTO PARA TRÁS *** Chama a função 'ping'.
+      uut.instr_mem[17] = 32'b11111101000111111111000011101111; // jal ra, -48 (Alvo: 0x14)
+      // PC=0x048: Restaura o 'ra' original da pilha.
+      uut.instr_mem[18] = 32'b00000000000000010010000010000011; // lw ra, 0(sp)
+      // PC=0x04C: Limpa a pilha.
+      uut.instr_mem[19] = 32'b00000000010000010000000100010011; // addi sp, sp, 4
+      // PC=0x050: (pong_ret) Retorna para quem chamou 'pong'.
+      uut.instr_mem[20] = 32'b00000000000000001000000001100111; // jalr zero, 0(ra)
       // Passada 1.1: Ordena os dois primeiros elementos
       /*uut.instr_mem[0] = 32'b00000000000000000000001010000011; // 0x000: lw t0, 0(zero)
       uut.instr_mem[1] = 32'b00000000010000000000001100000011; // 0x004: lw t1, 4(zero)
@@ -151,7 +181,7 @@ module tb_pipeline;
   wire signed [31:0] extended_B_TYPE = $signed({uut.IF_instr[31], uut.IF_instr[7], uut.IF_instr[30:25], uut.IF_instr[11:8], 1'b0});
   wire signed [31:0] extended_S_TYPE = $signed({uut.IF_instr[31:25], uut.IF_instr[11:7]});
   wire signed [31:0] extended_J_TYPE = $signed({uut.IF_instr[31], uut.IF_instr[19:12], uut.IF_instr[20], uut.IF_instr[30:21], 1'b0});
-  reg signed [31:0] MEM_imm, WB_imm;
+  reg signed [31:0] MEM_imm, WB_imm, MEM_r2;
   //PRINTANDO INSTRUCAO E ASSEMBLY
   initial begin
     wait (reset == 0);
@@ -161,6 +191,7 @@ module tb_pipeline;
       if(reset == 0) begin
         MEM_imm <= uut.EX_imm;
         WB_imm <= MEM_imm;
+        MEM_r2 <= uut.EX_r2;
         $display("\n\nPC alterado de %d para %d", pc_anterior, uut.PC);
         case (uut.IF_instr[6:0])
           7'b0110011: begin // R-Type
@@ -176,6 +207,9 @@ module tb_pipeline;
           7'b0000011: begin
             $display("Instrução IF  %b  -  LW x%0d, %0d(x%0d)", uut.IF_instr, uut.IF_instr[11:7], extended_I_TYPE, uut.IF_instr[19:15]);
           end
+          7'b1100111:begin
+            $display("Instrução IF  %b  -  JALR x%0d, %0d(x%0d)", uut.IF_instr, uut.IF_instr[11:7], extended_I_TYPE, uut.IF_instr[19:15]);
+          end
           7'b0010011: begin
             $display("Instrução IF  %b  -  ADDI x%0d, x%0d, %0d", uut.IF_instr, uut.IF_instr[11:7], uut.IF_instr[19:15], extended_I_TYPE);
           end
@@ -189,6 +223,8 @@ module tb_pipeline;
               end
               3'b001:
                 $display("Instrução IF  %b  -  BNE x%0d, x%0d, %0d", uut.IF_instr, uut.IF_instr[19:15], uut.IF_instr[24:20], extended_B_TYPE);
+              3'b000:
+                $display("Instrução IF  %b  -  BEQ x%0d, x%0d, %0d", uut.IF_instr, uut.IF_instr[19:15], uut.IF_instr[24:20], extended_B_TYPE);
             endcase
           end
           7'b1101111: begin
@@ -215,16 +251,21 @@ module tb_pipeline;
           7'b0010011: begin
             $display("Instrução ID  %b  -  ADDI x%0d, x%0d, %0d", uut.ID_instr, uut.ID_instr[11:7], uut.ID_instr[19:15], uut.ID_imm);
           end
+          7'b1100111: begin
+            $display("Instrução ID  %b  -  JALR x%0d, %0d(x%0d)", uut.ID_instr, uut.ID_instr[11:7], uut.ID_imm, uut.ID_instr[19:15]);
+          end
           7'b1100011:
             case (uut.ID_funct3)
               3'b101: begin
-                $display("Instrução ID  %b  -  BGE", uut.ID_instr);
+                $display("Instrução ID  %b  -  BGE x%0d, x%0d, %0d", uut.ID_instr, uut.ID_instr[19:15], uut.ID_instr[24:20], uut.ID_imm);
               end
               3'b100: begin
                 $display("Instrução ID  %b  -  BLT x%0d, x%0d, %0d", uut.ID_instr, uut.ID_instr[19:15], uut.ID_instr[24:20], uut.ID_imm);
               end
               3'b001:
                 $display("Instrução ID  %b  -  BNE x%0d, x%0d, %0d", uut.ID_instr, uut.ID_instr[19:15], uut.ID_instr[24:20], uut.ID_imm);
+              3'b000:
+                $display("Instrução ID  %b  -  BEQ x%0d, x%0d, %0d", uut.ID_instr, uut.ID_instr[19:15], uut.ID_instr[24:20], uut.ID_imm);
             endcase
           7'b1101111: begin
             $display("Instrução ID  %b  -  JAL x%0d, %0d", uut.ID_instr, uut.ID_instr[11:7], uut.ID_imm);
@@ -250,6 +291,9 @@ module tb_pipeline;
           7'b0010011: begin
             $display("Instrução EX  %b  -  ADDI x%0d, x%0d, %0d", uut.EX_instr, uut.EX_instr[11:7], uut.EX_instr[19:15], uut.EX_imm);
           end
+          7'b1100111: begin
+            $display("Instrução EX  %b  -  JALR x%0d, %0d(x%0d)", uut.EX_instr, uut.EX_instr[11:7],  uut.EX_imm, uut.EX_instr[19:15]);
+          end
           7'b1100011:
             case (uut.EX_instr[14:12])
               3'b101: begin
@@ -260,6 +304,8 @@ module tb_pipeline;
               end
               3'b001:
                 $display("Instrução EX  %b  -  BNE x%0d, x%0d, %0d", uut.EX_instr, uut.EX_instr[19:15], uut.EX_instr[24:20], uut.EX_imm);
+              3'b000:
+                $display("Instrução EX  %b  -  BEQ x%0d, x%0d, %0d", uut.EX_instr, uut.EX_instr[19:15], uut.EX_instr[24:20], uut.EX_imm);
             endcase
           7'b1101111: begin
                 $display("Instrução EX  %b  -  JAL x%0d, %0d", uut.EX_instr, uut.EX_instr[11:7], uut.EX_imm);
@@ -286,6 +332,9 @@ module tb_pipeline;
           7'b0010011: begin
             $display("Instrução MEM  %b  -  ADDI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], MEM_imm);
           end
+          7'b1100111: begin
+            $display("Instrução MEM  %b  -  JALR x%0d, %0d(x%0d)", uut.MEM_instr, uut.MEM_instr[11:7], MEM_imm, uut.MEM_instr[19:15]);
+          end
           7'b1100011:
             case (uut.MEM_instr[14:12])
               3'b101: begin
@@ -296,6 +345,8 @@ module tb_pipeline;
               end
               3'b001:
                 $display("Instrução MEM  %b  -  BNE x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[19:15], uut.MEM_instr[24:20], MEM_imm);
+              3'b000:
+                $display("Instrução MEM  %b  -  BEQ x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[19:15], uut.MEM_instr[24:20], MEM_imm);
             endcase
           7'b1101111: begin
             $display("Instrução MEM  %b  -  JAL x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], MEM_imm);
@@ -321,6 +372,9 @@ module tb_pipeline;
           7'b0010011: begin
             $display("Instrução WB  %b  -  ADDI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], WB_imm);
           end
+          7'b1100111: begin
+            $display("Instrução WB  %b  -  JALR x%0d, %0d(x%0d)", uut.WB_instr, uut.WB_instr[11:7], WB_imm, uut.WB_instr[19:15]);
+          end
           7'b1100011:
             case (uut.WB_instr[14:12])
               3'b101: begin
@@ -331,6 +385,8 @@ module tb_pipeline;
               end
               3'b001:
                 $display("Instrução WB  %b  -  BNE x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[19:15], uut.WB_instr[24:20], WB_imm);
+              3'b001:
+                $display("Instrução WB  %b  -  BEQ x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[19:15], uut.WB_instr[24:20], WB_imm);
             endcase
           7'b1101111: begin
             $display("Instrução WB  %b  -  JAL x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], WB_imm);
@@ -342,22 +398,13 @@ module tb_pipeline;
         case(uut.IF_instr[6:0])
           7'b0100011:begin//sw
             $display("SW - ETAPA ID: ID_r2 = banco_regs[%0d] = %0d", uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
-            $display("fwd_WB_to_EX_for_StoreData: %0d   ||  data_to_sw: %0d  ||  MEM_data: %0d  ||  REGS: %0d", uut.fwd_WB_to_EX_for_StoreData, uut.data_to_SW, uut.MEM_data, uut.banco_regs[uut.IF_instr[24:20]]);
+            $display("Destino de escrita na mem: %0d", uut.banco_regs[uut.IF_instr[19:15]]);
           end
           7'b1100011: //blt/bge
           $display("BLT - Etapa ID: id_r1: banco_regs[%0d] = %0d  ||  id_r2: banco_regs[%0d] = %0d",uut.IF_instr[19:15], uut.banco_regs[uut.IF_instr[19:15]], uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
         endcase
 
         case (uut.ID_opcode)
-          7'b0110011: begin // R-Type
-          $display("R-TYPE:");
-            case (uut.ID_funct7)
-              7'b0000000: $display("ULA: %0d + %0d = %0d", uut.alu_in1, uut.alu_in2, (uut.alu_in1 + uut.alu_in2));
-              7'b0000001: $display("ULA: %0d * %0d = %0d", uut.alu_in1, uut.alu_in2, (uut.alu_in1 * uut.alu_in2));
-              7'b0100000: $display("ULA: %0d - %0d = %0d", uut.alu_in1, uut.alu_in2, (uut.alu_in1 - uut.alu_in2));
-            endcase
-          end
-
           7'b0010011,  // ADDI
           7'b0000011:begin  // LW
           end
@@ -374,13 +421,15 @@ module tb_pipeline;
         endcase
 
         case (uut.EX_opcode)
-          7'b0010011,  // ADDI
-          7'b0100011:begin  // SW
-          //$display("SW - ETAPA MEM: Mem_data[%0d] = %0d", uut.EX_alu_result >> 2, uut.EX_r2);
-          end
+          7'b0100011:  // SW
+            $display("SW - ETAPA MEM: Mem_data[%0d] = %0d  ||  destino: %0d", uut.EX_alu_result >> 2, uut.EX_r2, uut.EX_r1);
 
           7'b0000011:  // LW
-          //$display("LW - ETAPA MEM: Mem_data[%0d] = %0d", (uut.EX_alu_result >> 2), uut.MEM_data);
+            $display("LW - ETAPA MEM: Mem_data[%0d] = %0d", (uut.EX_alu_result >> 2), uut.MEM_data);
+        endcase
+        case(uut.MEM_opcode)
+          7'b0100011:  // SW
+            $display("SW - ETAPA WB: Mem_data[%0d] = %0d  ||  destino: %0d", uut.MEM_alu_result >> 2, MEM_r2, uut.MEM_r1);
         endcase
 
         //$display("Valor de ID_r1: %0d  || EX_r1: %0d", uut.ID_r1, uut.EX_r1);

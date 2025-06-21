@@ -9,9 +9,8 @@ module RISCV_Pipeline (
   // Memórias e banco de registradores
   //===============================
   reg [31:0] instr_mem [0:255];    // Memoria de instruçoes
-  reg [31:0] data_mem  [0:255];   // Memoria de dados
-  reg [31:0] banco_regs [0:31];   // 32 registradores
-  reg [31:0] register_address;    // Para armazenar endereço de retorno (x1)
+  reg signed [31:0] data_mem  [0:255];   // Memoria de dados
+  reg signed [31:0] banco_regs [0:31];   // 32 registradores
 
   //======================
   // Registradores do Pipeline
@@ -26,7 +25,6 @@ module RISCV_Pipeline (
   reg signed [31:0] ID_imm;
   reg [6:0]  ID_opcode, ID_funct7;
   reg [2:0]  ID_funct3;
-  reg [31:0] link;
   reg ID_regwrite;
   reg ID_MemRead;
   reg ID_MemWrite;
@@ -44,7 +42,7 @@ module RISCV_Pipeline (
   reg EX_MemWrite;
 
   // MEM
-  reg [31:0] MEM_instr, MEM_data;
+  reg [31:0] MEM_instr, MEM_data, MEM_r1, MEM_PC;
   reg [4:0]  MEM_rd;
   reg [6:0]  MEM_opcode;
   reg [31:0] MEM_alu_result;
@@ -70,7 +68,7 @@ module RISCV_Pipeline (
   reg  signed [31:0] alu_result;
   reg [31:0]  branch_target;
   reg         branch_taken;
-  reg         bge_taken, blt_taken, bne_taken;
+  reg         bge_taken, blt_taken, bne_taken, beq_taken;
 
   //=======================
   // Cache de Instruções (direta, 4 linhas)
@@ -125,14 +123,14 @@ module RISCV_Pipeline (
   // Seleção de operandos para ULA (ALU Mux)
   //=======================
   wire signed [31:0] alu_in1 = fwdMEM_r1 ? data_to_forward_from_mem :
-                        fwdWB_r1  ? WB_data                  :
-                        ID_r1;
+                          fwdWB_r1  ? WB_data                       :
+                          ID_r1;
 
   wire signed [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
-                          ID_imm :
-                        fwdMEM_r2 ? data_to_forward_from_mem :
-                        fwdWB_r2 ?  WB_data                  :
-                        ID_r2;
+                          ID_imm                               :
+                          fwdMEM_r2 ? data_to_forward_from_mem :
+                          fwdWB_r2  ?  WB_data                 :
+                          ID_r2;
   wire [31:0] data_to_SW;
   assign data_to_SW = fwd_WB_to_EX_for_StoreData ? MEM_data : banco_regs[IF_instr[24:20]];
 
@@ -143,8 +141,6 @@ module RISCV_Pipeline (
   always @(posedge clock or posedge reset) begin
     if (reset) begin
       PC               <= 0;
-      register_address <= 0;
-      link             <= 0;
       for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
       // Invalida a cache
       for (i = 0; i < 4; i = i + 1) begin
@@ -163,9 +159,15 @@ module RISCV_Pipeline (
           PC <= branch_target;
       end
 
-      else if(flag_jump == 1) begin //JAL
-          PC <= ID_PC + ID_imm;
-          link <= PC + 4;
+      else if(flag_jump == 1) begin //JAL | JALR
+        case(ID_opcode)
+          7'b1100111:begin //JALR
+            PC <= ID_r1 + ID_imm;
+          end
+          7'b1101111: begin//JAL
+            PC <= ID_PC + ID_imm;
+          end
+        endcase
       end
 
       else if(stall)
@@ -208,7 +210,7 @@ module RISCV_Pipeline (
   // Estagio ID: Decodificação
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || (branch_taken && !stall) || flag_jump) begin
+    if (reset || branch_taken || flag_jump) begin
       ID_instr     <= 0;
       ID_PC        <= 0;
       ID_r1        <= 0;
@@ -277,6 +279,22 @@ module RISCV_Pipeline (
             flag_jump <= 0;
           end
 
+          7'b1100111: begin //JALR
+            ID_opcode   <= IF_instr[6:0];
+            ID_funct3   <= IF_instr[14:12];
+            ID_rd       <= IF_instr[11:7];
+            ID_indiceR1 <= IF_instr[19:15];
+            ID_r1       <= banco_regs[IF_instr[19:15]];
+            ID_imm      <= {{20{IF_instr[31]}}, IF_instr[31:20]};
+            if(IF_instr[11:7] != 0) //rd != 0
+              ID_regwrite <= 1;
+            else
+              ID_regwrite <= 0;
+            ID_MemRead  <= 0;
+            ID_MemWrite <= 0;
+            flag_jump <= 1;
+          end
+          
           7'b0100011: begin // SW
             ID_opcode   <= IF_instr[6:0];
             ID_funct3   <= IF_instr[14:12];
@@ -306,8 +324,8 @@ module RISCV_Pipeline (
             flag_jump <= 0;
           end
 
-          7'b1100011: begin // bge | blt | bne
-            ID_imm        <= {{19{IF_instr[31]}}, IF_instr[31], IF_instr[7], IF_instr[30:25], IF_instr[11:8], 1'b0};
+          7'b1100011: begin // bge | blt | bne | beq
+            ID_imm        <= {{20{IF_instr[31]}}, IF_instr[7], IF_instr[30:25], IF_instr[11:8], 1'b0};
             ID_indiceR2   <= IF_instr[24:20];
             ID_indiceR1   <= IF_instr[19:15];
             ID_r1         <= banco_regs[IF_instr[19:15]];
@@ -321,10 +339,13 @@ module RISCV_Pipeline (
           end
 
           7'b1101111: begin // jal
-            ID_imm        <= {{11{IF_instr[31]}}, IF_instr[31], IF_instr[19:12], IF_instr[20], IF_instr[30:21], 1'b0};
+            ID_imm        <= {{12{IF_instr[31]}}, IF_instr[19:12], IF_instr[20], IF_instr[30:21], 1'b0};
             ID_rd         <= IF_instr[11:7];
             ID_opcode     <= IF_instr[6:0];
-            ID_regwrite   <= 1;
+            if(IF_instr[11:7] != 0) //rd != 0
+              ID_regwrite <= 1;
+            else
+              ID_regwrite <= 0;
             flag_jump     <= 1;
             ID_MemRead  <= 0;
             ID_MemWrite <= 0;
@@ -412,12 +433,17 @@ module RISCV_Pipeline (
 
       7'b0010111: // AUIPC
         alu_result = imm_shift + ID_PC;
+      
+      7'b1101111,  //JAL
+      7'b1100111:  //JALR
+        alu_result = ID_PC + 4;
 
       7'b1100011: begin // Branch
         bne_taken     = (ID_funct3 == 3'b001) && (alu_in1 != alu_in2);
         bge_taken     = (ID_funct3 == 3'b101) && (alu_in1 >= alu_in2);
         blt_taken     = (ID_funct3 == 3'b100) && (alu_in1 <  alu_in2);
-        branch_taken  = bge_taken || blt_taken || bne_taken;
+        beq_taken     = (ID_funct3 == 3'b000) && (alu_in1 == alu_in2);
+        branch_taken  = bge_taken || blt_taken || bne_taken || beq_taken;
         branch_target = ID_PC + ID_imm;
       end
 
@@ -442,6 +468,8 @@ module RISCV_Pipeline (
       MEM_MemWrite  <= 0;
       MEM_MemRead   <= 0;
       MEM_alu_result <= 0;
+      MEM_PC          <= 0;
+      MEM_r1        <= 0;
     end else begin
       MEM_instr      <= EX_instr;
       MEM_rd         <= EX_rd;
@@ -450,6 +478,8 @@ module RISCV_Pipeline (
       MEM_MemRead    <= EX_MemRead;
       MEM_MemWrite   <= EX_MemWrite;
       MEM_alu_result <= EX_alu_result;
+      MEM_r1         <= EX_r1;
+      MEM_PC         <= EX_PC;
       if(EX_MemRead)begin //LW
         MEM_data <= mem_read_data_out;
       end
@@ -459,7 +489,7 @@ module RISCV_Pipeline (
           data_cache_valid[data_cache_index] <= 0;
       end
       else
-        MEM_data <= EX_alu_result; // Para instruções tipo R, ADDI e AUIPC
+        MEM_data <= EX_alu_result; // Para outras instruções
     end
   end
 
@@ -480,7 +510,6 @@ module RISCV_Pipeline (
       WB_regwrite <= MEM_regwrite;
       if (MEM_regwrite && MEM_rd != 0) begin
         banco_regs[MEM_rd] <= MEM_data;
-        register_address   <= link;
       end
     end
   end

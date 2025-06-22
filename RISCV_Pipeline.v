@@ -99,6 +99,7 @@ module RISCV_Pipeline (
 
   wire [31:0] data_to_forward_from_mem = MEM_MemRead ? mem_read_data_out : MEM_alu_result;
 
+  //para nao conflitar com os stalls, guardo a instrucao da etapa ID mais recente
 
 
   //=======================
@@ -109,7 +110,7 @@ module RISCV_Pipeline (
     
     // Forwarding do dado de um Store (WB -> EX)
   wire fwd_WB_to_EX_for_StoreData = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
-    // Forwarding para Loads antecessor de instrução com dependencia do dado
+    // Forwarding para Loads antecessor de instrucao com dependencia do dado
   wire fwdLW_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
   wire fwdLW_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
 
@@ -123,10 +124,9 @@ module RISCV_Pipeline (
   wire fwdWB_r1 = WB_regwrite  && (WB_rd == ID_indiceR1) && (WB_rd != 0);
   wire fwdWB_r2 = WB_regwrite  && (WB_rd == ID_indiceR2) && (WB_rd != 0);
 
-    //Se umma instrução precisa do dado de um load que esta ainda na etapa EX 
+    //Se umma instrucao precisa do dado de um load que esta ainda na etapa EX 
     //cria um stall ate ele receber o resultado da memoria no proximo clock
   wire stall =  EX_MemRead && (fwdLW_r1 || fwdLW_r2);
-  
 
   //=======================
   // Seleçao de operandos para ULA (ALU Mux)
@@ -246,8 +246,11 @@ module RISCV_Pipeline (
         ID_instr <= ID_instr;
         ID_PC    <= ID_PC;
         flag_jump <= flag_jump;
-        ID_r1     <= ID_r1;
-        ID_r2     <= ID_r2;
+        ID_r1     <= banco_regs[ID_indiceR1];
+        if(ID_MemWrite) //se for sw copio o valor novamente 
+          ID_r2     <= ID_r2;
+        else //se for branch ou tipo R, acesso o valor no banco de registradores novamente
+          ID_r2     <= banco_regs[ID_indiceR2];
         ID_rd     <= ID_rd;
         ID_imm    <= ID_imm;
         ID_opcode <= ID_opcode;
@@ -430,54 +433,56 @@ module RISCV_Pipeline (
   always @(*) begin
     alu_result    = 0;
 
-    case (ID_opcode)
-      7'b0110011: begin // R-Type
-        case (ID_funct7)
-          7'b0000000: alu_result = alu_in1 + alu_in2;
-          7'b0000001: alu_result = alu_in1 * alu_in2;
-          7'b0100000: alu_result = alu_in1 - alu_in2;
-        endcase
-      end
+    if(!stall)begin
+      case (ID_opcode)
+        7'b0110011: begin // R-Type
+          case (ID_funct7)
+            7'b0000000: alu_result = alu_in1 + alu_in2;
+            7'b0000001: alu_result = alu_in1 * alu_in2;
+            7'b0100000: alu_result = alu_in1 - alu_in2;
+          endcase
+        end
 
-      7'b0010011:begin  // ADDI e SRLI e SLLI
-        case(ID_funct3)
-          3'b101:
-            alu_result = alu_in1 >> ID_shamt; //srli
-          3'b001:
-            alu_result = alu_in1 << ID_shamt; //slli
-          3'b000:
-            alu_result = alu_in1 + ID_imm;
-        endcase
-      end
-      
-      7'b0000011,  // LW
-      7'b0100011:  // SW
-        alu_result = alu_in1 + ID_imm;
+        7'b0010011:begin  // ADDI e SRLI e SLLI
+          case(ID_funct3)
+            3'b101:
+              alu_result = alu_in1 >> ID_shamt; //srli
+            3'b001:
+              alu_result = alu_in1 << ID_shamt; //slli
+            3'b000:
+              alu_result = alu_in1 + ID_imm;
+          endcase
+        end
+        
+        7'b0000011,  // LW
+        7'b0100011:  // SW
+          alu_result = alu_in1 + ID_imm;
 
-      7'b0010111: // AUIPC
-        alu_result = ID_imm + ID_PC;
-      7'b0110111: //LUI
-        alu_result = ID_imm;
+        7'b0010111: // AUIPC
+          alu_result = ID_imm + ID_PC;
+        7'b0110111: //LUI
+          alu_result = ID_imm;
 
-      7'b1101111,  //JAL
-      7'b1100111:  //JALR
-        alu_result = ID_PC + 4;
+        7'b1101111,  //JAL
+        7'b1100111:  //JALR
+          alu_result = ID_PC + 4;
 
-      7'b1100011: begin // Branch
-        bne_taken     = (ID_funct3 == 3'b001) && (alu_in1 != alu_in2);
-        bge_taken     = (ID_funct3 == 3'b101) && (alu_in1 >= alu_in2);
-        blt_taken     = (ID_funct3 == 3'b100) && (alu_in1 <  alu_in2);
-        beq_taken     = (ID_funct3 == 3'b000) && (alu_in1 == alu_in2);
-        branch_taken  = bge_taken || blt_taken || bne_taken || beq_taken;
-        branch_target = ID_PC + ID_imm;
-      end
+        7'b1100011: begin // Branch
+          bne_taken     = (ID_funct3 == 3'b001) && (alu_in1 != alu_in2);
+          bge_taken     = (ID_funct3 == 3'b101) && (alu_in1 >= alu_in2);
+          blt_taken     = (ID_funct3 == 3'b100) && (alu_in1 <  alu_in2);
+          beq_taken     = (ID_funct3 == 3'b000) && (alu_in1 == alu_in2);
+          branch_taken  = bge_taken || blt_taken || bne_taken || beq_taken;
+          branch_target = ID_PC + ID_imm;
+        end
 
-      default: begin
-        alu_result    = 0;
-        branch_taken  = 0;
-        branch_target = 0;
-      end
-    endcase
+        default: begin
+          alu_result    = 0;
+          branch_taken  = 0;
+          branch_target = 0;
+        end
+      endcase
+    end
   end
 
   //====================

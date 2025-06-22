@@ -54,148 +54,96 @@ module tb_pipeline;
       // Formato: uut.instr_mem[index] = 32'b...;
       // --- Código de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
-      
-uut.instr_mem[0] = 32'h00400a13;
-
-uut.instr_mem[1] = 32'h00100293;
-
-uut.instr_mem[2] = 32'h1142d863;
-
-uut.instr_mem[3] = 32'h00000313;
-
-uut.instr_mem[4] = 32'h11435063;
-
-uut.instr_mem[5] = 32'h005303b3;
-
-uut.instr_mem[6] = 32'h0143d463;
-
-uut.instr_mem[7] = 32'h0080006f;
-
-uut.instr_mem[8] = 32'h000a03b3;
-
-uut.instr_mem[9] = 32'h00129893;
-
-uut.instr_mem[10] = 32'h01130433;
-
-uut.instr_mem[11] = 32'h01445463;
-
-uut.instr_mem[12] = 32'h0080006f;
-
-uut.instr_mem[13] = 32'h000a0433;
-
-uut.instr_mem[14] = 32'h0c83d863;
-
-uut.instr_mem[15] = 32'h000304b3;
-
-uut.instr_mem[16] = 32'h00038533;
-
-uut.instr_mem[17] = 32'h000305b3;
-
-uut.instr_mem[18] = 32'h0474d663;
-
-uut.instr_mem[19] = 32'h04855463;
-
-uut.instr_mem[20] = 32'h00249913;
-
-uut.instr_mem[21] = 32'h00092603;
-
-uut.instr_mem[22] = 32'h00251993;
-
-uut.instr_mem[23] = 32'h0009a683;
-
-uut.instr_mem[24] = 32'h00d64e63;
-
-uut.instr_mem[25] = 32'h01458ab3;
-
-uut.instr_mem[26] = 32'h002a9b13;
-
-uut.instr_mem[27] = 32'h00db2023;
-
-uut.instr_mem[28] = 32'h00158593;
-
-uut.instr_mem[29] = 32'h00150513;
-
-uut.instr_mem[30] = 32'hfd1ff06f;
-
-uut.instr_mem[31] = 32'h01458ab3;
-
-uut.instr_mem[32] = 32'h002a9b13;
-
-uut.instr_mem[33] = 32'h00cb2023;
-
-uut.instr_mem[34] = 32'h00158593;
-
-uut.instr_mem[35] = 32'h00148493;
-
-uut.instr_mem[36] = 32'hfb9ff06f;
-
-uut.instr_mem[37] = 32'h0274d463;
-
-uut.instr_mem[38] = 32'h0274d263;
-
-uut.instr_mem[39] = 32'h00249913;
-
-uut.instr_mem[40] = 32'h00092603;
-
-uut.instr_mem[41] = 32'h01458ab3;
-
-uut.instr_mem[42] = 32'h002a9b13;
-
-uut.instr_mem[43] = 32'h00cb2023;
-
-uut.instr_mem[44] = 32'h00158593;
-
-uut.instr_mem[45] = 32'h00148493;
-
-uut.instr_mem[46] = 32'hfe1ff06f;
-
-uut.instr_mem[47] = 32'h02855463;
-
-uut.instr_mem[48] = 32'h02855263;
-
-uut.instr_mem[49] = 32'h00251993;
-
-uut.instr_mem[50] = 32'h0009a683;
-
-uut.instr_mem[51] = 32'h01458ab3;
-
-uut.instr_mem[52] = 32'h002a9b13;
-
-uut.instr_mem[53] = 32'h00db2023;
-
-uut.instr_mem[54] = 32'h00158593;
-
-uut.instr_mem[55] = 32'h00150513;
-
-uut.instr_mem[56] = 32'hfe1ff06f;
-
-uut.instr_mem[57] = 32'h00030bb3;
-
-uut.instr_mem[58] = 32'h028bd063;
-
-uut.instr_mem[59] = 32'h014b8ab3;
-
-uut.instr_mem[60] = 32'h002a9b13;
-
-uut.instr_mem[61] = 32'h000b2c03;
-
-uut.instr_mem[62] = 32'h002b9c93;
-
-uut.instr_mem[63] = 32'h018ca023;
-
-uut.instr_mem[64] = 32'h001b8b93;
-
-uut.instr_mem[65] = 32'hfe5ff06f;
-
-uut.instr_mem[66] = 32'h01130333;
-
-uut.instr_mem[67] = 32'hf05ff06f;
-
-uut.instr_mem[68] = 32'h00129293;
-
-uut.instr_mem[69] = 32'hef5ff06f;
-
-uut.instr_mem[70] = 32'h000000ef;
+// main
+uut.instr_mem[0] = 32'h00400a13; // addi	s4,zero,4
+uut.instr_mem[1] = 32'h00100293; // addi	t0,zero,1
+// width_loop
+uut.instr_mem[2] = 32'h1142dc63; // bge	t0,s4,120 <done>
+uut.instr_mem[3] = 32'h00000313; // addi	t1,zero,0
+// i_loop
+uut.instr_mem[4] = 32'h11435463; // bge	t1,s4,118 <after_i_loop>
+uut.instr_mem[5] = 32'h005303b3; // add	t2,t1,t0
+uut.instr_mem[6] = 32'h0143d463; // bge	t2,s4,20 <mid_eq_N>
+uut.instr_mem[7] = 32'h0080006f; // jal	zero,24 <cont1>
+// mid_eq_N
+uut.instr_mem[8] = 32'h000a03b3; // add	t2,s4,zero
+// cont1
+uut.instr_mem[9] = 32'h00129893; // slli	a7,t0,0x1
+uut.instr_mem[10] = 32'h01130433; // add	s0,t1,a7
+uut.instr_mem[11] = 32'h01445463; // bge	s0,s4,34 <end_eq_N>
+uut.instr_mem[12] = 32'h0080006f; // jal	zero,38 <cont2>
+// end_eq_N
+uut.instr_mem[13] = 32'h000a0433; // add	s0,s4,zero
+// cont2
+uut.instr_mem[14] = 32'h0c83dc63; // bge	t2,s0,110 <after_merge>
+uut.instr_mem[15] = 32'h000304b3; // add	s1,t1,zero
+uut.instr_mem[16] = 32'h00038533; // add	a0,t2,zero
+uut.instr_mem[17] = 32'h000305b3; // add	a1,t1,zero
+// merge_loop
+uut.instr_mem[18] = 32'h0474de63; // bge	s1,t2,a4 <merge_left_loop>
+uut.instr_mem[19] = 32'h04855c63; // bge	a0,s0,a4 <merge_left_loop>
+uut.instr_mem[20] = 32'h00249913; // slli	s2,s1,0x2
+uut.instr_mem[21] = 32'h00092603; // lw	a2,0(s2)
+uut.instr_mem[22] = 32'h00048913; // addi	s2,s1,0
+uut.instr_mem[23] = 32'h00092603; // lw	a2,0(s2)
+uut.instr_mem[24] = 32'h00251993; // slli	s3,a0,0x2
+uut.instr_mem[25] = 32'h0009a683; // lw	a3,0(s3)
+uut.instr_mem[26] = 32'h02d64263; // blt	a2,a3,8c <left_smaller>
+// right_smaller
+uut.instr_mem[27] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[28] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[29] = 32'h00db2023; // sw	a3,0(s6)
+uut.instr_mem[30] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[31] = 32'h00daa023; // sw	a3,0(s5)
+uut.instr_mem[32] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[33] = 32'h00150513; // addi	a0,a0,1
+uut.instr_mem[34] = 32'hfc1ff06f; // jal	zero,48 <merge_loop>
+// left_smaller
+uut.instr_mem[35] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[36] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[37] = 32'h00cb2023; // sw	a2,0(s6)
+uut.instr_mem[38] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[39] = 32'h00148493; // addi	s1,s1,1
+uut.instr_mem[40] = 32'hfa9ff06f; // jal	zero,48 <merge_loop>
+// merge_left_loop
+uut.instr_mem[41] = 32'h0274d263; // bge	s1,t2,c8 <copy_right_remaining>
+uut.instr_mem[42] = 32'h00249913; // slli	s2,s1,0x2
+uut.instr_mem[43] = 32'h00092603; // lw	a2,0(s2)
+uut.instr_mem[44] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[45] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[46] = 32'h00cb2023; // sw	a2,0(s6)
+uut.instr_mem[47] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[48] = 32'h00148493; // addi	s1,s1,1
+uut.instr_mem[49] = 32'hfe1ff06f; // jal	zero,a4 <merge_left_loop>
+// copy_right_remaining
+uut.instr_mem[50] = 32'h02855263; // bge	a0,s0,ec <copy_back>
+uut.instr_mem[51] = 32'h00251993; // slli	s3,a0,0x2
+uut.instr_mem[52] = 32'h0009a683; // lw	a3,0(s3)
+uut.instr_mem[53] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[54] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[55] = 32'h00db2023; // sw	a3,0(s6)
+uut.instr_mem[56] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[57] = 32'h00150513; // addi	a0,a0,1
+uut.instr_mem[58] = 32'hfe1ff06f; // jal	zero,c8 <copy_right_remaining>
+// copy_back
+uut.instr_mem[59] = 32'h00030bb3; // add	s7,t1,zero
+// copy_back_loop
+uut.instr_mem[60] = 32'h028bd063; // bge	s7,s0,110 <after_merge>
+uut.instr_mem[61] = 32'h014b8ab3; // add	s5,s7,s4
+uut.instr_mem[62] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[63] = 32'h000b2c03; // lw	s8,0(s6)
+uut.instr_mem[64] = 32'h002b9c93; // slli	s9,s7,0x2
+uut.instr_mem[65] = 32'h018ca023; // sw	s8,0(s9)
+uut.instr_mem[66] = 32'h001b8b93; // addi	s7,s7,1
+uut.instr_mem[67] = 32'hfe5ff06f; // jal	zero,f0 <copy_back_loop>
+// after_merge
+uut.instr_mem[68] = 32'h01130333; // add	t1,t1,a7
+uut.instr_mem[69] = 32'hefdff06f; // jal	zero,10 <i_loop>
+// after_i_loop
+uut.instr_mem[70] = 32'h00129293; // slli	t0,t0,0x1
+uut.instr_mem[71] = 32'heedff06f; // jal	zero,8 <width_loop>
+// done
+uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
   end
   wire signed [31:0] extended_I_TYPE = $signed(uut.IF_instr[31:20]);
   wire signed [31:0] extended_B_TYPE = $signed({uut.IF_instr[31], uut.IF_instr[7], uut.IF_instr[30:25], uut.IF_instr[11:8], 1'b0});

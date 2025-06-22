@@ -44,17 +44,18 @@ module tb_pipeline;
       uut.data_mem[1] = 32'd97;
       uut.data_mem[2] = 32'd52;
       uut.data_mem[3] = 32'd58;
-      uut.data_mem[4] = 32'd67;
+      /*uut.data_mem[4] = 32'd67;
       uut.data_mem[5] = 32'd85;
       uut.data_mem[6] = 32'd101;
       uut.data_mem[7] = 32'd7;
       uut.data_mem[8] = 32'd44;
-      uut.data_mem[9] = 32'd32;
+      uut.data_mem[9] = 32'd32;*/
       // Algoritmo Mergesort para 4 elementos
       // Formato: uut.instr_mem[index] = 32'b...;
       // --- Código de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
-uut.instr_mem[0] = 32'h00a00a13;
+      
+uut.instr_mem[0] = 32'h00400a13;
 
 uut.instr_mem[1] = 32'h00100293;
 
@@ -265,9 +266,9 @@ uut.instr_mem[70] = 32'h000000ef;
         case(uut.ID_opcode)
           7'b0110011: begin // R-Type
               case (uut.ID_funct7)
-                7'b0000000:$display("Instruçao ID  %b  -  ADD x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
-                7'b0000001:$display("Instruçao ID  %b  -  MUL x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
-                7'b0100000:$display("Instruçao ID  %b  -  SUB x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
+                7'b0000000:$display("Instruçao ID  %b  -  ADD x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_indiceR1, uut.ID_indiceR2);
+                7'b0000001:$display("Instruçao ID  %b  -  MUL x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_indiceR1, uut.ID_indiceR2);
+                7'b0100000:$display("Instruçao ID  %b  -  SUB x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_indiceR1, uut.ID_indiceR2);
               endcase
             end
           7'b0100011:begin
@@ -311,9 +312,9 @@ uut.instr_mem[70] = 32'h000000ef;
         case(uut.EX_opcode)
           7'b0110011: begin // R-Type
               case (uut.EX_instr[31:25])
-                7'b0000000:$display("Instruçao EX  %b  -  ADD x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_r1, uut.EX_r2);
-                7'b0000001:$display("Instruçao EX  %b  -  MUL x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_r1, uut.EX_r2);
-                7'b0100000:$display("Instruçao EX  %b  -  SUB x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_r1, uut.EX_r2);
+                7'b0000000:$display("Instruçao EX  %b  -  ADD x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_instr[19:15], uut.EX_instr[24:20]);
+                7'b0000001:$display("Instruçao EX  %b  -  MUL x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_instr[19:15], uut.EX_instr[24:20]);
+                7'b0100000:$display("Instruçao EX  %b  -  SUB x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_instr[19:15], uut.EX_instr[24:20]);
               endcase
             end
           7'b0100011:begin
@@ -357,9 +358,9 @@ uut.instr_mem[70] = 32'h000000ef;
           
           7'b0110011: begin // R-Type
               case (uut.MEM_instr[31:25])
-                7'b0000000:$display("Instruçao MEM  %b  -  ADD x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_r1, MEM_r2);
-                7'b0000001:$display("Instruçao MEM  %b  -  MUL x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_r1, MEM_r2);
-                7'b0100000:$display("Instruçao MEM  %b  -  SUB x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_r1, MEM_r2);
+                7'b0000000:$display("Instruçao MEM  %b  -  ADD x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_instr[19:15], uut.MEM_instr[24:20]);
+                7'b0000001:$display("Instruçao MEM  %b  -  MUL x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_instr[19:15], uut.MEM_instr[24:20]);
+                7'b0100000:$display("Instruçao MEM  %b  -  SUB x%0d, x%0d, x%0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_instr[19:15], uut.MEM_instr[24:20]);
               endcase
             end
           7'b0100011:begin
@@ -370,8 +371,8 @@ uut.instr_mem[70] = 32'h000000ef;
           end
           7'b0010011: begin
             case(uut.MEM_instr[14:12])
-              3'b001: $display("Instruçao MEM  %b  -  SLLI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], uut.EX_instr[24:20]);
-              3'b101: $display("Instruçao MEM  %b  -  SRLI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], uut.EX_instr[24:20]);
+              3'b001: $display("Instruçao MEM  %b  -  SLLI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], uut.MEM_instr[24:20]);
+              3'b101: $display("Instruçao MEM  %b  -  SRLI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], uut.MEM_instr[24:20]);
               3'b000: $display("Instruçao MEM  %b  -  ADDI x%0d, x%0d, %0d", uut.MEM_instr, uut.MEM_instr[11:7], uut.MEM_instr[19:15], MEM_imm);
             endcase
           end
@@ -402,9 +403,9 @@ uut.instr_mem[70] = 32'h000000ef;
         case(uut.WB_instr[6:0])
           7'b0110011: begin // R-Type
             case (uut.WB_instr[31:25])
-              7'b0000000:$display("Instruçao WB  %b  -  ADD x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, WB_r1, WB_r2);
-              7'b0000001:$display("Instruçao WB  %b  -  MUL x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, WB_r1, WB_r2);
-              7'b0100000:$display("Instruçao WB  %b  -  SUB x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, WB_r1, WB_r2);
+              7'b0000000:$display("Instruçao WB  %b  -  ADD x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, uut.WB_instr[19:15], uut.WB_instr[24:20]);
+              7'b0000001:$display("Instruçao WB  %b  -  MUL x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, uut.WB_instr[19:15], uut.WB_instr[24:20]);
+              7'b0100000:$display("Instruçao WB  %b  -  SUB x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, uut.WB_instr[19:15], uut.WB_instr[24:20]);
             endcase
           end
           7'b0100011:begin
@@ -415,8 +416,8 @@ uut.instr_mem[70] = 32'h000000ef;
           end
           7'b0010011: begin
             case(uut.WB_instr[14:12])
-              3'b001: $display("Instruçao WB  %b  -  SLLI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], uut.EX_instr[24:20]);
-              3'b101: $display("Instruçao WB  %b  -  SRLI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], uut.EX_instr[24:20]);
+              3'b001: $display("Instruçao WB  %b  -  SLLI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], uut.WB_instr[24:20]);
+              3'b101: $display("Instruçao WB  %b  -  SRLI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], uut.WB_instr[24:20]);
               3'b000: $display("Instruçao WB  %b  -  ADDI x%0d, x%0d, %0d", uut.WB_instr, uut.WB_instr[11:7], uut.WB_instr[19:15], WB_imm);
             endcase
           end
@@ -445,15 +446,33 @@ uut.instr_mem[70] = 32'h000000ef;
         endcase
       //PRINTS DAS OPERAÇOES
         /*case(uut.IF_instr[6:0])
+          7'b0110011: begin // R-Type
+              case (uut.IF_instr[31:25])
+                7'b0000000:begin
+                  $display("Instruçao ADD  - %0d + %0d = %0d", uut.banco_regs[uut.IF_instr[19:15]], uut.banco_regs[uut.IF_instr[24:20]], uut.banco_regs[uut.IF_instr[19:15]]+uut.banco_regs[uut.IF_instr[24:20]]);
+                end
+                //7'b0000001:$display("", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
+                //7'b0100000:$display("", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
+              endcase
+          end
           7'b0100011:begin//sw
             //$display("SW - ETAPA ID: ID_r2 = banco_regs[%0d] = %0d", uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
             //$display("Destino de escrita na mem: %0d", uut.banco_regs[uut.IF_instr[19:15]]);
           end
           7'b1100011: //blt/bge
           //$display("BLT - Etapa ID: id_r1: banco_regs[%0d] = %0d  ||  id_r2: banco_regs[%0d] = %0d",uut.IF_instr[19:15], uut.banco_regs[uut.IF_instr[19:15]], uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
-        endcase*/
+        endcase
 
         case (uut.ID_opcode)
+          7'b0110011: begin // R-Type
+              case (uut.ID_funct7)
+                7'b0000000:begin
+                  $display("Instruçao ADD  - %0d + %0d = %0d", uut.ID_r1, uut.ID_r2, uut.ID_r2 + uut.ID_r1);
+                end
+                //7'b0000001:$display("", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
+                //7'b0100000:$display("", uut.ID_instr, uut.ID_rd, uut.ID_r1, uut.ID_r2);
+              endcase
+          end
           7'b0000011:begin  // LW
             //$display("Destino3: %0d", $signed(uut.EX_alu_result));
           end
@@ -468,43 +487,47 @@ uut.instr_mem[70] = 32'h000000ef;
           end
         endcase
 
-        /*case (uut.EX_opcode)
+        case (uut.EX_opcode)
           7'b0100011:begin  // SW
             //$display("SW - ETAPA MEM: Mem_data[%0d] = %0d", uut.EX_alu_result >> 2, uut.EX_r2);
             //$display("Valor de MEM_alu_result: %0d || fwd_sw: %0d", uut.MEM_alu_result, uut.fwd_sw);
           end
           7'b0000011:  // LW
             //$display("LW - ETAPA MEM: Mem_data[%0d] = %0d", (uut.EX_alu_result >> 2), uut.MEM_data);
-        endcase*/
+        endcase
         case(uut.MEM_opcode)
           7'b0100011:begin  // SW
             //$display("SW - ETAPA WB: Mem_data[%0d] = %0d  ||  destino: %0d", uut.MEM_alu_result >> 2, MEM_r2, uut.MEM_r1);
             //$display("Valor de MEM_alu_result: %0d || fwd_sw: %0d", uut.MEM_alu_result, uut.fwd_sw);
           end
-        endcase
+        endcase*/
 
         //$display("Valor de ID_r1: %0d  || EX_r1: %0d", uut.ID_r1, uut.EX_r1);
-        pc_anterior = uut.PC;
-        $display("--------------------------------------------------------------------------------");
-        $display("Reg[0]: %0d  || Reg[1]: %0d  || Reg[2]: %0d  || Reg[3]: %0d", uut.banco_regs[0], uut.banco_regs[1], uut.banco_regs[2], uut.banco_regs[3]);
-        $display("Reg[4]: %0d  || Reg[5]: %0d  || Reg[6]: %0d  || Reg[7]: %0d", uut.banco_regs[4], uut.banco_regs[5], uut.banco_regs[6], uut.banco_regs[7]);
-        $display("Reg[8]: %0d  || Reg[9]: %0d  || Reg[10]: %0d || Reg[11]: %0d", uut.banco_regs[8], uut.banco_regs[9], uut.banco_regs[10], uut.banco_regs[11]);
-        $display("Reg[12]: %0d || Reg[13]: %0d || Reg[14]: %0d || Reg[15]: %0d", uut.banco_regs[12], uut.banco_regs[13], uut.banco_regs[14], uut.banco_regs[15]);
-        $display("\ndata_mem[0] = %0d || data_mem[4] = %0d || data_mem[8]  = %0d", uut.data_mem[0], uut.data_mem[4], uut.data_mem[8]);
-        $display("data_mem[1] = %0d || data_mem[5] = %0d || data_mem[9]  = %0d", uut.data_mem[1], uut.data_mem[5], uut.data_mem[9]);
-        $display("data_mem[2] = %0d || data_mem[6] = %0d || data_mem[10] = %0d", uut.data_mem[2], uut.data_mem[6], uut.data_mem[10]);
-        $display("data_mem[3] = %0d || data_mem[7] = %0d || data_mem[11] = %0d", uut.data_mem[3], uut.data_mem[7], uut.data_mem[11]);
-        $display("--------------------------------------------------------------------------------");
-        if (uut.ID_instr[6:0] == 7'b1100011) begin
-          $display("=====================================================");
-          $display("Comparando ID_r1: %d  ||  ID_r2: %d", uut.alu_in1, uut.alu_in2);
-          $display("Resultado da comparaçao: %s", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
-          $display("PC alvo: %d", uut.branch_target);
-          $display("====================================================");
-        end
+      pc_anterior = uut.PC;
+      $display("--------------------------------------------------------------------------------");
+      $display("Reg[0]: %0d   || Reg[1]: %0d   || Reg[2]: %0d   || Reg[3]: %0d", uut.banco_regs[0], uut.banco_regs[1], uut.banco_regs[2], uut.banco_regs[3]);
+      $display("Reg[4]: %0d   || Reg[5]: %0d   || Reg[6]: %0d   || Reg[7]: %0d", uut.banco_regs[4], uut.banco_regs[5], uut.banco_regs[6], uut.banco_regs[7]);
+      $display("Reg[8]: %0d   || Reg[9]: %0d   || Reg[10]: %0d  || Reg[11]: %0d", uut.banco_regs[8], uut.banco_regs[9], uut.banco_regs[10], uut.banco_regs[11]);
+      $display("Reg[12]: %0d  || Reg[13]: %0d  || Reg[14]: %0d  || Reg[15]: %0d", uut.banco_regs[12], uut.banco_regs[13], uut.banco_regs[14], uut.banco_regs[15]);
+      $display("Reg[16]: %0d  || Reg[17]: %0d  || Reg[18]: %0d  || Reg[19]: %0d", uut.banco_regs[16], uut.banco_regs[17], uut.banco_regs[18], uut.banco_regs[19]);
+      $display("Reg[20]: %0d  || Reg[21]: %0d  || Reg[22]: %0d  || Reg[23]: %0d", uut.banco_regs[20], uut.banco_regs[21], uut.banco_regs[22], uut.banco_regs[23]);
+      $display("Reg[24]: %0d  || Reg[25]: %0d  || Reg[26]: %0d  || Reg[27]: %0d", uut.banco_regs[24], uut.banco_regs[25], uut.banco_regs[26], uut.banco_regs[27]);
+      $display("Reg[28]: %0d  || Reg[29]: %0d  || Reg[30]: %0d  || Reg[31]: %0d", uut.banco_regs[28], uut.banco_regs[29], uut.banco_regs[30], uut.banco_regs[31]);
+      $display("\ndata_mem[0] = %0d   || data_mem[1] = %0d    || data_mem[2]  = %0d    || data_mem[3] = %0d", uut.data_mem[0], uut.data_mem[1], uut.data_mem[2], uut.data_mem[3]);
+      $display("data_mem[4] = %0d     || data_mem[5] = %0d    || data_mem[6]  = %0d    || data_mem[7] = %0d", uut.data_mem[4], uut.data_mem[5], uut.data_mem[6], uut.data_mem[7]);
+      $display("data_mem[8] = %0d     || data_mem[9] = %0d    || data_mem[10]  = %0d   || data_mem[11] = %0d", uut.data_mem[8], uut.data_mem[9], uut.data_mem[10], uut.data_mem[11]);
+      $display("data_mem[12] = %0d    || data_mem[13] = %0d   || data_mem[14]  = %0d   || data_mem[15] = %0d", uut.data_mem[12], uut.data_mem[13], uut.data_mem[14], uut.data_mem[15]);
+      $display("--------------------------------------------------------------------------------");
+      if (uut.ID_instr[6:0] == 7'b1100011) begin
+        $display("=====================================================");
+        $display("Comparando ID_r1: %d  ||  ID_r2: %d", uut.alu_in1, uut.alu_in2);
+        $display("Resultado da comparaçao: %s", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
+        $display("PC alvo: %d", uut.branch_target);
+        $display("====================================================");
       end
     end
   end
+end
 
   // 4) Espera o mergesort rodar e imprime o resultado
   initial begin

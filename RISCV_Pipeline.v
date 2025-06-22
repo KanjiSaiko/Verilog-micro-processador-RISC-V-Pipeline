@@ -50,7 +50,7 @@ module RISCV_Pipeline (
   reg MEM_MemWrite;
 
   reg [31:0] WB_instr;
-  reg [31:0] WB_data;
+  reg signed [31:0] WB_data;
   reg [4:0]  WB_rd;
   reg WB_regwrite; 
   reg WB_MemRead;
@@ -106,36 +106,46 @@ module RISCV_Pipeline (
   //=======================
     // Forwarding do dado para um Store (WB -> EX)
   wire fwd_sw = EX_MemWrite && (MEM_rd == EX_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
+    
     // Forwarding do dado de um Store (WB -> EX)
   wire fwd_WB_to_EX_for_StoreData = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
-  wire fwdEX_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
-  wire fwdEX_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
+    // Forwarding para Loads antecessor de instrução com dependencia do dado
+  wire fwdLW_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
+  wire fwdLW_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
+
+    //Loads nao podem entrar pois calculam endereço na ula, e nao resultado do reg_destino
+  wire fwdEX_r1 = EX_regwrite && !EX_MemRead && (EX_rd == ID_indiceR1) && (EX_rd != 0);
+  wire fwdEX_r2 = EX_regwrite && !EX_MemRead && (EX_rd == ID_indiceR2) && (EX_rd != 0);
 
   wire fwdMEM_r1 = MEM_regwrite && (MEM_rd == ID_indiceR1) && (MEM_rd != 0);
   wire fwdMEM_r2 = MEM_regwrite && (MEM_rd == ID_indiceR2) && (MEM_rd != 0);
 
-
   wire fwdWB_r1 = WB_regwrite  && (WB_rd == ID_indiceR1) && (WB_rd != 0);
   wire fwdWB_r2 = WB_regwrite  && (WB_rd == ID_indiceR2) && (WB_rd != 0);
-  wire stall =  EX_MemRead && (fwdEX_r1 || fwdEX_r2);
+
+    //Se umma instrução precisa do dado de um load que esta ainda na etapa EX 
+    //cria um stall ate ele receber o resultado da memoria no proximo clock
+  wire stall =  EX_MemRead && (fwdLW_r1 || fwdLW_r2);
   
 
   //=======================
   // Seleçao de operandos para ULA (ALU Mux)
   //=======================
-  wire signed [31:0] alu_in1 = 
+  wire signed [31:0] alu_in1 = fwdEX_r1 ? EX_alu_result         :
                           fwdMEM_r1 ? data_to_forward_from_mem  :
                           fwdWB_r1  ? WB_data                   :
                           ID_r1;
 
   wire signed [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
-                          ID_imm                               :  
+                          ID_imm                               :
+                          fwdEX_r2  ? EX_alu_result            :
                           fwdMEM_r2 ? data_to_forward_from_mem :
                           fwdWB_r2  ?  WB_data                 :
                           ID_r2;
+
   wire signed [31:0] data_to_SW;
 
-  assign data_to_SW = fwd_WB_to_EX_for_StoreData ?  MEM_data      :                    
+  assign data_to_SW = fwd_WB_to_EX_for_StoreData ?  MEM_data   :                    
                       banco_regs[IF_instr[24:20]];
 
 
@@ -255,7 +265,7 @@ module RISCV_Pipeline (
         ID_PC     <= IF_PC;
 
         case (IF_instr[6:0])
-          7'b0010011: begin// ADDI e SLRI
+          7'b0010011: begin// ADDI e SLRI e SLLI
             ID_opcode   <= IF_instr[6:0];
             ID_funct3   <= IF_instr[14:12];
             ID_rd       <= IF_instr[11:7];
@@ -432,9 +442,9 @@ module RISCV_Pipeline (
       7'b0010011:begin  // ADDI e SRLI e SLLI
         case(ID_funct3)
           3'b101:
-            alu_result = alu_in1 >> ID_shamt;
+            alu_result = alu_in1 >> ID_shamt; //srli
           3'b001:
-            alu_result = alu_in1 << ID_shamt;
+            alu_result = alu_in1 << ID_shamt; //slli
           3'b000:
             alu_result = alu_in1 + ID_imm;
         endcase

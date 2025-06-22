@@ -29,7 +29,7 @@ funct7:
 0000001 -> mul
 
 
-pseudoinstrução -> LA (auipc + addi)
+pseudoinstruçao -> LA (auipc + addi)
 
 ===============================================================================
 imm     rd    opcode -> AUIPC / u

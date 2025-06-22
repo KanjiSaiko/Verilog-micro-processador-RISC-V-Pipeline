@@ -31,20 +31,20 @@ module RISCV_Pipeline (
   reg flag_jump;
 
   // EX
-  reg [31:0] EX_instr, EX_alu_result, EX_r1, EX_r2, EX_PC;
+  reg [31:0] EX_instr, EX_r1, EX_r2, EX_PC;
   reg [4:0]  EX_rd;
   reg [6:0]  EX_opcode, EX_funct7;
-  reg signed [31:0] EX_imm;
+  reg signed [31:0] EX_imm,  EX_alu_result;
   reg [2:0]  EX_funct3;
   reg EX_regwrite;
   reg EX_MemRead;
   reg EX_MemWrite;
 
   // MEM
-  reg [31:0] MEM_instr, MEM_data, MEM_r1, MEM_PC;
+  reg [31:0] MEM_instr,  MEM_r1, MEM_PC;
   reg [4:0]  MEM_rd;
   reg [6:0]  MEM_opcode;
-  reg [31:0] MEM_alu_result;
+  reg signed [31:0] MEM_alu_result, MEM_data;
   reg MEM_regwrite;
   reg MEM_MemRead;
   reg MEM_MemWrite;
@@ -73,7 +73,7 @@ module RISCV_Pipeline (
   // Cache de Instruções (direta, 4 linhas)
   //=======================
   reg [31:0] instr_cache_data [0:3];  // Dados da cache
-  reg [27:0] instr_cache_tag  [0:3];  // Tags da cache (endereÃ§os sem offset)
+  reg [27:0] instr_cache_tag  [0:3];  // Tags da cache (enderea§os sem offset)
   reg        instr_cache_valid[0:3];  // Bits de validade da cache
 
   wire [1:0] cache_index = PC[3:2];   // Indexa 4 linhas (usando bits 3:2)
@@ -104,7 +104,9 @@ module RISCV_Pipeline (
   //=======================
   // Forwarding Logic
   //=======================
-  // Forwarding do dado de um Store (WB -> EX)
+    // Forwarding do dado para um Store (WB -> EX)
+  wire fwd_sw = EX_MemWrite && (MEM_rd == EX_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
+    // Forwarding do dado de um Store (WB -> EX)
   wire fwd_WB_to_EX_for_StoreData = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
   wire fwdEX_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
   wire fwdEX_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
@@ -119,23 +121,26 @@ module RISCV_Pipeline (
   
 
   //=======================
-  // Seleção de operandos para ULA (ALU Mux)
+  // Seleçao de operandos para ULA (ALU Mux)
   //=======================
-  wire signed [31:0] alu_in1 = fwdMEM_r1 ? data_to_forward_from_mem :
-                          fwdWB_r1  ? WB_data                       :
+  wire signed [31:0] alu_in1 = 
+                          fwdMEM_r1 ? data_to_forward_from_mem  :
+                          fwdWB_r1  ? WB_data                   :
                           ID_r1;
 
   wire signed [31:0] alu_in2 = (ID_opcode == 7'b0010011 || ID_opcode == 7'b0000011 || ID_opcode == 7'b0100011) ?
-                          ID_imm                               :
+                          ID_imm                               :  
                           fwdMEM_r2 ? data_to_forward_from_mem :
                           fwdWB_r2  ?  WB_data                 :
                           ID_r2;
-  wire [31:0] data_to_SW;
-  assign data_to_SW = fwd_WB_to_EX_for_StoreData ? MEM_data : banco_regs[IF_instr[24:20]];
+  wire signed [31:0] data_to_SW;
+
+  assign data_to_SW = fwd_WB_to_EX_for_StoreData ?  MEM_data      :                    
+                      banco_regs[IF_instr[24:20]];
 
 
   //=======================
-  // Atualização do PC
+  // Atualizaçao do PC
   //=======================
   always @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -178,7 +183,7 @@ module RISCV_Pipeline (
   end
 
   //=======================
-  // Estagio IF: Busca de instrução
+  // Estagio IF: Busca de instruçao
   //=======================
   always @(posedge clock or posedge reset) begin
     if (reset || branch_taken || flag_jump) begin
@@ -206,7 +211,7 @@ module RISCV_Pipeline (
   end
 
   //=======================
-  // Estagio ID: Decodificação
+  // Estagio ID: Decodificaçao
   //=======================
   always @(posedge clock or posedge reset) begin
     if (reset || branch_taken || flag_jump) begin
@@ -494,7 +499,10 @@ module RISCV_Pipeline (
         MEM_data <= mem_read_data_out;
       end
       else if(EX_MemWrite) begin //SW
-          data_mem[EX_alu_result >> 2] <= EX_r2;
+          if(fwd_sw)
+            data_mem[EX_alu_result >> 2] <= MEM_alu_result; //pega o resultado da instruçao anterior
+          else
+            data_mem[EX_alu_result >> 2] <= EX_r2;
           // Invalida a linha da cache correspondente (write-through + no write-allocate)
           data_cache_valid[data_cache_index] <= 0;
       end

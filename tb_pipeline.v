@@ -40,28 +40,68 @@ module tb_pipeline;
       // carrega os 4 valores que você quer ordenar:
      // Mergesort para 4 elementos, SEM saltos para trás (offsets negativos).
       // carrega os 4 valores que você quer ordenar:
-      uut.data_mem[0] = 32'd17;
-      uut.data_mem[1] = 32'd97;
-      uut.data_mem[2] = 32'd52;
-      uut.data_mem[3] = 32'd58;
-      /*uut.data_mem[4] = 32'd67;
-      uut.data_mem[5] = 32'd85;
-      uut.data_mem[6] = 32'd101;
-      uut.data_mem[7] = 32'd7;
-      uut.data_mem[8] = 32'd44;
-      uut.data_mem[9] = 32'd32;*/
+      uut.data_mem[0] = 32'd167;
+      uut.data_mem[1] = 32'd165;
+      uut.data_mem[2] = 32'd186;
+      uut.data_mem[3] = 32'd172;
+      uut.data_mem[4] = 32'd94;
+      uut.data_mem[5] = 32'd165;
+      uut.data_mem[6] = 32'd60;
+      uut.data_mem[7] = 32'd130;
+      uut.data_mem[8] = 32'd13;
+      uut.data_mem[9] = 32'd121;
+      uut.data_mem[10] = 32'd79;
+      uut.data_mem[11] = 32'd170;
+      uut.data_mem[12] = 32'd106;
+      uut.data_mem[13] = 32'd59;
+      uut.data_mem[14] = 32'd190;
+      uut.data_mem[15] = 32'd136;
+      uut.data_mem[16] = 32'd196;
+      uut.data_mem[17] = 32'd159;
+      uut.data_mem[18] = 32'd59;
+      uut.data_mem[19] = 32'd137;
+      uut.data_mem[20] = 32'd49;
+      uut.data_mem[21] = 32'd142;
+      uut.data_mem[22] = 32'd86;
+      uut.data_mem[23] = 32'd123;
+      uut.data_mem[24] = 32'd102;
+      uut.data_mem[25] = 32'd11;
+      uut.data_mem[26] = 32'd8;
+      uut.data_mem[27] = 32'd25;
+      uut.data_mem[28] = 32'd71;
+      uut.data_mem[29] = 32'd199;
+      uut.data_mem[30] = 32'd40;
+      uut.data_mem[31] = 32'd146;
+      uut.data_mem[32] = 32'd138;
+      uut.data_mem[33] = 32'd195;
+      uut.data_mem[34] = 32'd19;
+      uut.data_mem[35] = 32'd14;
+      uut.data_mem[36] = 32'd170;
+      uut.data_mem[37] = 32'd138;
+      uut.data_mem[38] = 32'd88;
+      uut.data_mem[39] = 32'd15;
+      uut.data_mem[40] = 32'd104;
+      uut.data_mem[41] = 32'd52;
+      uut.data_mem[42] = 32'd156;
+      uut.data_mem[43] = 32'd105;
+      uut.data_mem[44] = 32'd54;
+      uut.data_mem[45] = 32'd99;
+      uut.data_mem[46] = 32'd65;
+      uut.data_mem[47] = 32'd151;
+      uut.data_mem[48] = 32'd6;
+      uut.data_mem[49] = 32'd73;
       // Algoritmo Mergesort para 4 elementos
       // Formato: uut.instr_mem[index] = 32'b...;
       // --- Código de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
 // main
-uut.instr_mem[0] = 32'h00400a13; // addi	s4,zero,4
+uut.instr_mem[0] = 32'h03200a13; // addi	s4,zero,50
 uut.instr_mem[1] = 32'h00100293; // addi	t0,zero,1
 // width_loop
-uut.instr_mem[2] = 32'h1142dc63; // bge	t0,s4,120 <done>
+uut.instr_mem[2] = 32'h1142d863; // bge	t0,s4,118 <done>
 uut.instr_mem[3] = 32'h00000313; // addi	t1,zero,0
 // i_loop
-uut.instr_mem[4] = 32'h11435463; // bge	t1,s4,118 <after_i_loop>
+uut.instr_mem[4] = 32'h11435063; // bge	t1,s4,110 <after_i_loop>
 uut.instr_mem[5] = 32'h005303b3; // add	t2,t1,t0
 uut.instr_mem[6] = 32'h0143d463; // bge	t2,s4,20 <mid_eq_N>
 uut.instr_mem[7] = 32'h0080006f; // jal	zero,24 <cont1>
@@ -75,75 +115,71 @@ uut.instr_mem[12] = 32'h0080006f; // jal	zero,38 <cont2>
 // end_eq_N
 uut.instr_mem[13] = 32'h000a0433; // add	s0,s4,zero
 // cont2
-uut.instr_mem[14] = 32'h0c83dc63; // bge	t2,s0,110 <after_merge>
+uut.instr_mem[14] = 32'h0c83d863; // bge	t2,s0,108 <after_merge>
 uut.instr_mem[15] = 32'h000304b3; // add	s1,t1,zero
 uut.instr_mem[16] = 32'h00038533; // add	a0,t2,zero
 uut.instr_mem[17] = 32'h000305b3; // add	a1,t1,zero
 // merge_loop
-uut.instr_mem[18] = 32'h0474de63; // bge	s1,t2,a4 <merge_left_loop>
-uut.instr_mem[19] = 32'h04855c63; // bge	a0,s0,a4 <merge_left_loop>
+uut.instr_mem[18] = 32'h0474da63; // bge	s1,t2,9c <merge_left_loop>
+uut.instr_mem[19] = 32'h04855863; // bge	a0,s0,9c <merge_left_loop>
 uut.instr_mem[20] = 32'h00249913; // slli	s2,s1,0x2
 uut.instr_mem[21] = 32'h00092603; // lw	a2,0(s2)
-uut.instr_mem[22] = 32'h00048913; // addi	s2,s1,0
-uut.instr_mem[23] = 32'h00092603; // lw	a2,0(s2)
 uut.instr_mem[24] = 32'h00251993; // slli	s3,a0,0x2
 uut.instr_mem[25] = 32'h0009a683; // lw	a3,0(s3)
-uut.instr_mem[26] = 32'h02d64263; // blt	a2,a3,8c <left_smaller>
+uut.instr_mem[26] = 32'h00d64e63; // blt	a2,a3,84 <left_smaller>
 // right_smaller
 uut.instr_mem[27] = 32'h01458ab3; // add	s5,a1,s4
 uut.instr_mem[28] = 32'h002a9b13; // slli	s6,s5,0x2
 uut.instr_mem[29] = 32'h00db2023; // sw	a3,0(s6)
-uut.instr_mem[30] = 32'h01458ab3; // add	s5,a1,s4
-uut.instr_mem[31] = 32'h00daa023; // sw	a3,0(s5)
-uut.instr_mem[32] = 32'h00158593; // addi	a1,a1,1
-uut.instr_mem[33] = 32'h00150513; // addi	a0,a0,1
-uut.instr_mem[34] = 32'hfc1ff06f; // jal	zero,48 <merge_loop>
+uut.instr_mem[30] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[31] = 32'h00150513; // addi	a0,a0,1
+uut.instr_mem[32] = 32'hfc9ff06f; // jal	zero,48 <merge_loop>
 // left_smaller
-uut.instr_mem[35] = 32'h01458ab3; // add	s5,a1,s4
-uut.instr_mem[36] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.instr_mem[37] = 32'h00cb2023; // sw	a2,0(s6)
-uut.instr_mem[38] = 32'h00158593; // addi	a1,a1,1
-uut.instr_mem[39] = 32'h00148493; // addi	s1,s1,1
-uut.instr_mem[40] = 32'hfa9ff06f; // jal	zero,48 <merge_loop>
+uut.instr_mem[33] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[34] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[35] = 32'h00cb2023; // sw	a2,0(s6)
+uut.instr_mem[36] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[37] = 32'h00148493; // addi	s1,s1,1
+uut.instr_mem[38] = 32'hfb1ff06f; // jal	zero,48 <merge_loop>
 // merge_left_loop
-uut.instr_mem[41] = 32'h0274d263; // bge	s1,t2,c8 <copy_right_remaining>
-uut.instr_mem[42] = 32'h00249913; // slli	s2,s1,0x2
-uut.instr_mem[43] = 32'h00092603; // lw	a2,0(s2)
-uut.instr_mem[44] = 32'h01458ab3; // add	s5,a1,s4
-uut.instr_mem[45] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.instr_mem[46] = 32'h00cb2023; // sw	a2,0(s6)
-uut.instr_mem[47] = 32'h00158593; // addi	a1,a1,1
-uut.instr_mem[48] = 32'h00148493; // addi	s1,s1,1
-uut.instr_mem[49] = 32'hfe1ff06f; // jal	zero,a4 <merge_left_loop>
+uut.instr_mem[39] = 32'h0274d263; // bge	s1,t2,c0 <copy_right_remaining>
+uut.instr_mem[40] = 32'h00249913; // slli	s2,s1,0x2
+uut.instr_mem[41] = 32'h00092603; // lw	a2,0(s2)
+uut.instr_mem[42] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[43] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[44] = 32'h00cb2023; // sw	a2,0(s6)
+uut.instr_mem[45] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[46] = 32'h00148493; // addi	s1,s1,1
+uut.instr_mem[47] = 32'hfe1ff06f; // jal	zero,9c <merge_left_loop>
 // copy_right_remaining
-uut.instr_mem[50] = 32'h02855263; // bge	a0,s0,ec <copy_back>
-uut.instr_mem[51] = 32'h00251993; // slli	s3,a0,0x2
-uut.instr_mem[52] = 32'h0009a683; // lw	a3,0(s3)
-uut.instr_mem[53] = 32'h01458ab3; // add	s5,a1,s4
-uut.instr_mem[54] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.instr_mem[55] = 32'h00db2023; // sw	a3,0(s6)
-uut.instr_mem[56] = 32'h00158593; // addi	a1,a1,1
-uut.instr_mem[57] = 32'h00150513; // addi	a0,a0,1
-uut.instr_mem[58] = 32'hfe1ff06f; // jal	zero,c8 <copy_right_remaining>
+uut.instr_mem[48] = 32'h02855263; // bge	a0,s0,e4 <copy_back>
+uut.instr_mem[49] = 32'h00251993; // slli	s3,a0,0x2
+uut.instr_mem[50] = 32'h0009a683; // lw	a3,0(s3)
+uut.instr_mem[51] = 32'h01458ab3; // add	s5,a1,s4
+uut.instr_mem[52] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[53] = 32'h00db2023; // sw	a3,0(s6)
+uut.instr_mem[54] = 32'h00158593; // addi	a1,a1,1
+uut.instr_mem[55] = 32'h00150513; // addi	a0,a0,1
+uut.instr_mem[56] = 32'hfe1ff06f; // jal	zero,c0 <copy_right_remaining>
 // copy_back
-uut.instr_mem[59] = 32'h00030bb3; // add	s7,t1,zero
+uut.instr_mem[57] = 32'h00030bb3; // add	s7,t1,zero
 // copy_back_loop
-uut.instr_mem[60] = 32'h028bd063; // bge	s7,s0,110 <after_merge>
-uut.instr_mem[61] = 32'h014b8ab3; // add	s5,s7,s4
-uut.instr_mem[62] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.instr_mem[63] = 32'h000b2c03; // lw	s8,0(s6)
-uut.instr_mem[64] = 32'h002b9c93; // slli	s9,s7,0x2
-uut.instr_mem[65] = 32'h018ca023; // sw	s8,0(s9)
-uut.instr_mem[66] = 32'h001b8b93; // addi	s7,s7,1
-uut.instr_mem[67] = 32'hfe5ff06f; // jal	zero,f0 <copy_back_loop>
+uut.instr_mem[58] = 32'h028bd063; // bge	s7,s0,108 <after_merge>
+uut.instr_mem[59] = 32'h014b8ab3; // add	s5,s7,s4
+uut.instr_mem[60] = 32'h002a9b13; // slli	s6,s5,0x2
+uut.instr_mem[61] = 32'h000b2c03; // lw	s8,0(s6)
+uut.instr_mem[62] = 32'h002b9c93; // slli	s9,s7,0x2
+uut.instr_mem[63] = 32'h018ca023; // sw	s8,0(s9)
+uut.instr_mem[64] = 32'h001b8b93; // addi	s7,s7,1
+uut.instr_mem[65] = 32'hfe5ff06f; // jal	zero,e8 <copy_back_loop>
 // after_merge
-uut.instr_mem[68] = 32'h01130333; // add	t1,t1,a7
-uut.instr_mem[69] = 32'hefdff06f; // jal	zero,10 <i_loop>
+uut.instr_mem[66] = 32'h01130333; // add	t1,t1,a7
+uut.instr_mem[67] = 32'hf05ff06f; // jal	zero,10 <i_loop>
 // after_i_loop
-uut.instr_mem[70] = 32'h00129293; // slli	t0,t0,0x1
-uut.instr_mem[71] = 32'heedff06f; // jal	zero,8 <width_loop>
+uut.instr_mem[68] = 32'h00129293; // slli	t0,t0,0x1
+uut.instr_mem[69] = 32'hef5ff06f; // jal	zero,8 <width_loop>
 // done
-uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
+uut.instr_mem[70] = 32'h000000ef; // jal	ra,118 <done>
   end
   wire signed [31:0] extended_I_TYPE = $signed(uut.IF_instr[31:20]);
   wire signed [31:0] extended_B_TYPE = $signed({uut.IF_instr[31], uut.IF_instr[7], uut.IF_instr[30:25], uut.IF_instr[11:8], 1'b0});
@@ -155,15 +191,15 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
     wait (reset == 0);
     pc_anterior = 32'b0;
     forever begin
-      @(posedge clock);
-      if(reset == 0) begin
-        MEM_imm <= uut.EX_imm;
-        WB_imm <= MEM_imm;
-        MEM_r2 <= uut.EX_r2;
-        WB_r1 <= uut.MEM_r1;
-        WB_r2 <= MEM_r2;
-        $display("\n\nPC alterado de %d para %d", pc_anterior, uut.PC);
-        case (uut.IF_instr[6:0])
+    @(posedge clock);
+    if(reset == 0) begin
+      MEM_imm <= uut.EX_imm;
+      WB_imm <= MEM_imm;
+      MEM_r2 <= uut.EX_r2;
+      WB_r1 <= uut.MEM_r1;
+      WB_r2 <= MEM_r2;
+      $display("\n\nPC: %d", pc_anterior);
+      case (uut.IF_instr[6:0])
           7'b0110011: begin // R-Type
               case (uut.IF_instr[31:25])
                 7'b0000000: $display("Instrucao IF  %b  -  ADD x%0d, x%0d, x%0d", uut.IF_instr, uut.IF_instr[11:7], uut.IF_instr[19:15], uut.IF_instr[24:20]);
@@ -209,9 +245,9 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           7'b0010111: $display("Instrucao IF  %b  -  AUIPC x%0d, %0d", uut.IF_instr, uut.IF_instr[11:7], {uut.IF_instr[31:12], 12'b0});
 
           default: $display("Instrucao IF  %b", uut.IF_instr);
-        endcase
+      endcase
 
-        case(uut.ID_opcode)
+      case(uut.ID_opcode)
           7'b0110011: begin // R-Type
               case (uut.ID_funct7)
                 7'b0000000:$display("Instrucao ID  %b  -  ADD x%0d, x%0d, x%0d", uut.ID_instr, uut.ID_rd, uut.ID_indiceR1, uut.ID_indiceR2);
@@ -255,9 +291,9 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           7'b0110111: $display("Instrucao ID  %b  -  LUI x%0d, %0d", uut.ID_instr, uut.ID_rd, uut.ID_imm);
           7'b0010111: $display("Instrucao ID  %b  -  AUIPC x%0d, %0d", uut.ID_instr, uut.ID_rd, uut.ID_imm);
           default: $display("Instrucao ID  %b", uut.ID_instr);
-        endcase
+      endcase
 
-        case(uut.EX_opcode)
+      case(uut.EX_opcode)
           7'b0110011: begin // R-Type
               case (uut.EX_instr[31:25])
                 7'b0000000:$display("Instrucao EX  %b  -  ADD x%0d, x%0d, x%0d", uut.EX_instr, uut.EX_rd, uut.EX_instr[19:15], uut.EX_instr[24:20]);
@@ -300,9 +336,9 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           7'b0110111: $display("Instrucao EX  %b  -  LUI x%0d, %0d", uut.EX_instr, uut.EX_rd, uut.EX_imm);
           7'b0010111: $display("Instrucao EX  %b  -  AUIPC x%0d, %0d", uut.EX_instr, uut.EX_rd, uut.EX_imm);
           default: $display("Instrucao EX  %b", uut.EX_instr);
-        endcase
+      endcase
 
-        case(uut.MEM_opcode)
+      case(uut.MEM_opcode)
           
           7'b0110011: begin // R-Type
               case (uut.MEM_instr[31:25])
@@ -346,9 +382,9 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           7'b0110111: $display("Instrucao MEM  %b  -  LUI x%0d, %0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_data);
           7'b0010111: $display("Instrucao MEM  %b  -  AUIPC x%0d, %0d", uut.MEM_instr, uut.MEM_rd, uut.MEM_data);
           default: $display("Instrucao MEM  %b", uut.MEM_instr);
-        endcase
+      endcase
 
-        case(uut.WB_instr[6:0])
+      case(uut.WB_instr[6:0])
           7'b0110011: begin // R-Type
             case (uut.WB_instr[31:25])
               7'b0000000:$display("Instrucao WB  %b  -  ADD x%0d, x%0d, x%0d", uut.WB_instr, uut.WB_rd, uut.WB_instr[19:15], uut.WB_instr[24:20]);
@@ -391,9 +427,9 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           7'b0110111: $display("Instrucao WB  %b  -  LUI x%0d, %0d", uut.WB_instr, uut.WB_rd, uut.WB_data);
           7'b0010111: $display("Instrucao WB  %b  -  AUIPC x%0d, %0d", uut.WB_instr, uut.WB_rd, uut.WB_data);
           default: $display("Instrucao WB  %b", uut.WB_instr);
-        endcase
+      endcase
       //PRINTS DAS OPERAcOES
-        /*case(uut.IF_instr[6:0])
+      /*case(uut.IF_instr[6:0])
           7'b0110011: begin // R-Type
               case (uut.IF_instr[31:25])
                 7'b0000000:begin
@@ -404,14 +440,14 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
               endcase
           end
           7'b0100011:begin//sw
-            //$display("SW - ETAPA ID: ID_r2 = banco_regs[%0d] = %0d", uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
+            $display("Estagio IF (SW): Indice_R2: %0d", uut.fwd_WB_to_EX_for_StoreData, uut.IF_instr[24:20]);
             //$display("Destino de escrita na mem: %0d", uut.banco_regs[uut.IF_instr[19:15]]);
           end
-          7'b1100011: //blt/bge
+          //7'b1100011: //blt/bge
           //$display("BLT - Etapa ID: id_r1: banco_regs[%0d] = %0d  ||  id_r2: banco_regs[%0d] = %0d",uut.IF_instr[19:15], uut.banco_regs[uut.IF_instr[19:15]], uut.IF_instr[24:20], uut.banco_regs[uut.IF_instr[24:20]]);
-        endcase*/
+      endcase*/
 
-        /*case (uut.ID_opcode)
+      /*case (uut.ID_opcode)
           7'b0110011: begin // R-Type
               case (uut.ID_funct7)
                 7'b0000000:begin
@@ -426,7 +462,7 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
           end
 
           7'b0100011:begin  // SW
-            //$display("Estagio ID (SW): FWDEX = %0d  ||  ID_INDICE1: %0d  ||  EX_rd: %0d  ->  ID_R2: %0d", uut.fwdEX_r2, uut.ID_indiceR2, uut.EX_rd, uut.ID_r2);
+            
           end
 
           7'b1101111: begin //JAL
@@ -437,7 +473,7 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
             $display("Valor dos regs estagio ID: %b ||  ID_r1: %0d", uut.ID_instr,  uut.ID_r1);
             $display("fwd_EX: %0d || fwd_MEM: %0d || fwd_WB: %0d || aluin1: %0d  aluin2: %0d", uut.fwdEX_r1, uut.fwdMEM_r1, uut.fwdWB_r1, uut.alu_in1, uut.alu_in2);
           end
-       endcase*/
+      endcase*/
 
         /*case (uut.EX_opcode)
           7'b0100011:begin  // SW
@@ -464,11 +500,13 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
       $display("Reg[16]: %0d  || Reg[17]: %0d  || Reg[18]: %0d  || Reg[19]: %0d", uut.banco_regs[16], uut.banco_regs[17], uut.banco_regs[18], uut.banco_regs[19]);
       $display("Reg[20]: %0d  || Reg[21]: %0d  || Reg[22]: %0d  || Reg[23]: %0d", uut.banco_regs[20], uut.banco_regs[21], uut.banco_regs[22], uut.banco_regs[23]);
       $display("Reg[24]: %0d  || Reg[25]: %0d  || Reg[26]: %0d  || Reg[27]: %0d", uut.banco_regs[24], uut.banco_regs[25], uut.banco_regs[26], uut.banco_regs[27]);
-      $display("Reg[28]: %0d  || Reg[29]: %0d  || Reg[30]: %0d  || Reg[31]: %0d", uut.banco_regs[28], uut.banco_regs[29], uut.banco_regs[30], uut.banco_regs[31]);
-      $display("\ndata_mem[0] = %0d   || data_mem[1] = %0d    || data_mem[2]  = %0d    || data_mem[3] = %0d", uut.data_mem[0], uut.data_mem[1], uut.data_mem[2], uut.data_mem[3]);
+      $display("Reg[28]: %0d  || Reg[29]: %0d  || Reg[30]: %0d  || Reg[31]: %0d\n", uut.banco_regs[28], uut.banco_regs[29], uut.banco_regs[30], uut.banco_regs[31]);
+      $display("data_mem[0] = %0d   || data_mem[1] = %0d    || data_mem[2]  = %0d    || data_mem[3] = %0d", uut.data_mem[0], uut.data_mem[1], uut.data_mem[2], uut.data_mem[3]);
       $display("data_mem[4] = %0d     || data_mem[5] = %0d    || data_mem[6]  = %0d    || data_mem[7] = %0d", uut.data_mem[4], uut.data_mem[5], uut.data_mem[6], uut.data_mem[7]);
       $display("data_mem[8] = %0d     || data_mem[9] = %0d    || data_mem[10]  = %0d   || data_mem[11] = %0d", uut.data_mem[8], uut.data_mem[9], uut.data_mem[10], uut.data_mem[11]);
       $display("data_mem[12] = %0d    || data_mem[13] = %0d   || data_mem[14]  = %0d   || data_mem[15] = %0d", uut.data_mem[12], uut.data_mem[13], uut.data_mem[14], uut.data_mem[15]);
+      $display("data_mem[16] = %0d     || data_mem[17] = %0d    || data_mem[18]  = %0d   || data_mem[19] = %0d", uut.data_mem[16], uut.data_mem[17], uut.data_mem[18], uut.data_mem[19]);
+      $display("data_mem[20] = %0d    || data_mem[21] = %0d   || data_mem[22]  = %0d   || data_mem[23] = %0d", uut.data_mem[20], uut.data_mem[21], uut.data_mem[22], uut.data_mem[23]);
       $display("--------------------------------------------------------------------------------");
       if(uut.stall)
         $display("STALL");
@@ -476,8 +514,8 @@ uut.instr_mem[72] = 32'h000000ef; // jal	ra,120 <done>
       else if (uut.ID_instr[6:0] == 7'b1100011) begin
         $display("=====================================================");
         $display("Comparando ID_r1: %d  ||  ID_r2: %d", uut.alu_in1, uut.alu_in2);
+        $display("PC será atualizado para: %d", uut.branch_target);
         $display("Resultado da comparacao: %s", uut.branch_taken ? "TOMADO" : "NAO TOMADO");
-        $display("PC alvo: %d", uut.branch_target);
         $display("====================================================");
       end
     end
@@ -487,7 +525,7 @@ end
   // 4) Espera o mergesort rodar e imprime o resultado
   initial begin
     wait (reset == 0);
-    #200000;  // tempo suficiente para ordenar
+    #100000;  // tempo suficiente para ordenar
 
     $display("\n--- Vetor ordenado em data_mem ---");
     for (i = 0; i < 32; i = i + 1)

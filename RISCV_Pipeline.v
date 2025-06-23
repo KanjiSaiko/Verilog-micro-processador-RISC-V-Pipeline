@@ -108,8 +108,10 @@ module RISCV_Pipeline (
     // Forwarding do dado para um Store (WB -> EX)
   wire fwd_sw = EX_MemWrite && (MEM_rd == EX_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
     
-    // Forwarding do dado de um Store (WB -> EX)
-  wire fwd_WB_to_EX_for_StoreData = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
+    // Forwarding do dado de um Store
+  wire fwdEX_SW_r2 =  (IF_instr[6:0] == 7'b0100011) && (EX_rd == IF_instr[24:20]) && EX_regwrite && (EX_rd != 0);
+  wire fwdMEM_SW_r2 = (IF_instr[6:0] == 7'b0100011) && (MEM_rd == IF_instr[24:20]) && MEM_regwrite && (MEM_rd != 0);
+  wire fwdWB_SW_r2 =  (IF_instr[6:0] == 7'b0100011) && (WB_rd == IF_instr[24:20]) && WB_regwrite && (MEM_rd != 0);
     // Forwarding para Loads antecessor de instrucao com dependencia do dado
   wire fwdLW_r1 = EX_regwrite && (EX_rd == ID_indiceR1) && (EX_rd != 0);
   wire fwdLW_r2 = EX_regwrite && (EX_rd == ID_indiceR2) && (EX_rd != 0);
@@ -128,6 +130,15 @@ module RISCV_Pipeline (
     //cria um stall ate ele receber o resultado da memoria no proximo clock
   wire stall =  EX_MemRead && (fwdLW_r1 || fwdLW_r2);
 
+
+  wire signed [31:0] data_to_SW_r2;
+  assign data_to_SW_r2 = (fwdEX_SW_r2 && EX_MemRead) ?  mem_read_data_out   :
+                      fwdEX_SW_r2                    ?  EX_alu_result       :
+                      fwdMEM_SW_r2                   ?  MEM_data            :                  
+                      fwdWB_SW_r2                    ?  WB_data             :
+                      banco_regs[IF_instr[24:20]];
+
+
   //=======================
   // Seleçao de operandos para ULA (ALU Mux)
   //=======================
@@ -142,11 +153,6 @@ module RISCV_Pipeline (
                           fwdMEM_r2 ? data_to_forward_from_mem :
                           fwdWB_r2  ?  WB_data                 :
                           ID_r2;
-
-  wire signed [31:0] data_to_SW;
-
-  assign data_to_SW = fwd_WB_to_EX_for_StoreData ?  MEM_data   :                    
-                      banco_regs[IF_instr[24:20]];
 
 
   //=======================
@@ -318,7 +324,7 @@ module RISCV_Pipeline (
             ID_indiceR1 <= IF_instr[19:15];
             ID_indiceR2 <= IF_instr[24:20];
             ID_r1       <= banco_regs[IF_instr[19:15]];
-            ID_r2       <= data_to_SW;
+            ID_r2       <= data_to_SW_r2;
             ID_imm      <= {{20{IF_instr[31]}}, IF_instr[31:25], IF_instr[11:7]};
             ID_regwrite <= 0;
             ID_MemRead  <= 0;

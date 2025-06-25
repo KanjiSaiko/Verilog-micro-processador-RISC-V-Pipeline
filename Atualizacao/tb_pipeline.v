@@ -95,88 +95,88 @@ module tb_pipeline;
       // --- Código de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
 // main
-uut.memoria_instrucoes[0] = 32'h00400a13; // addi	s4,zero,4
-uut.memoria_instrucoes[1] = 32'h00100293; // addi	t0,zero,1
+uut.memoria_instrucoes[0] = 32'h00400a13; // addi	x20,zero,4
+uut.memoria_instrucoes[1] = 32'h00100293; // addi	x5,zero,1
 // width_loop
-uut.memoria_instrucoes[2] = 32'h1142d463; // bge	t0,s4,110 <done>
-uut.memoria_instrucoes[3] = 32'h00000313; // addi	t1,zero,0
+uut.memoria_instrucoes[2] = 32'h1142d463; // bge	x5,x20,110 <done>
+uut.memoria_instrucoes[3] = 32'h00000313; // addi	x6,zero,0
 // i_loop
-uut.memoria_instrucoes[4] = 32'h0f435c63; // bge	t1,s4,108 <after_i_loop>
-uut.memoria_instrucoes[5] = 32'h005303b3; // add	t2,t1,t0
-uut.memoria_instrucoes[6] = 32'h0143d463; // bge	t2,s4,20 <mid_eq_N>
-uut.memoria_instrucoes[7] = 32'h0080006f; // jal	zero,24 <cont1>
+uut.memoria_instrucoes[4] = 32'h0f435c63; // bge	x6,x20,108 <after_i_loop>
+uut.memoria_instrucoes[5] = 32'h005303b3; // add	x7,x6,x5
+uut.memoria_instrucoes[6] = 32'h0143d463; // bge	x7,x20,20 <mid_eq_N>
+uut.memoria_instrucoes[7] = 32'h0080006f; // jal	zero,24 <conx6>
 // mid_eq_N
-uut.memoria_instrucoes[8] = 32'h000a03b3; // add	t2,s4,zero
-// cont1
-uut.memoria_instrucoes[9] = 32'h00129893; // slli	a7,t0,0x1
-uut.memoria_instrucoes[10] = 32'h01130433; // add	s0,t1,a7
-uut.memoria_instrucoes[11] = 32'h01445463; // bge	s0,s4,34 <end_eq_N>
-uut.memoria_instrucoes[12] = 32'h0080006f; // jal	zero,38 <cont2>
+uut.memoria_instrucoes[8] = 32'h000a03b3; // add	x7,x20,zero
+// conx6
+uut.memoria_instrucoes[9] = 32'h00129893; // slli	x17,x5,0x1
+uut.memoria_instrucoes[10] = 32'h01130433; // add	x8,x6,x17
+uut.memoria_instrucoes[11] = 32'h01445463; // bge	x8,x20,34 <end_eq_N>
+uut.memoria_instrucoes[12] = 32'h0080006f; // jal	zero,38 <conx7>
 // end_eq_N
-uut.memoria_instrucoes[13] = 32'h000a0433; // add	s0,s4,zero
-// cont2
-uut.memoria_instrucoes[14] = 32'h0c83d463; // bge	t2,s0,100 <after_merge>
-uut.memoria_instrucoes[15] = 32'h000304b3; // add	s1,t1,zero
-uut.memoria_instrucoes[16] = 32'h00038533; // add	a0,t2,zero
-uut.memoria_instrucoes[17] = 32'h000305b3; // add	a1,t1,zero
+uut.memoria_instrucoes[13] = 32'h000a0433; // add	x8,x20,zero
+// conx7
+uut.memoria_instrucoes[14] = 32'h0c83d463; // bge	x7,x8,100 <after_merge>
+uut.memoria_instrucoes[15] = 32'h000304b3; // add	x9,x6,zero
+uut.memoria_instrucoes[16] = 32'h00038533; // add	x10,x7,zero
+uut.memoria_instrucoes[17] = 32'h000305b3; // add	x11,x6,zero
 // merge_loop
-uut.memoria_instrucoes[18] = 32'h0474d663; // bge	s1,t2,94 <merge_left_loop>
-uut.memoria_instrucoes[19] = 32'h04855463; // bge	a0,s0,94 <merge_left_loop>
-uut.memoria_instrucoes[20] = 32'h00249913; // slli	s2,s1,0x2
-uut.memoria_instrucoes[21] = 32'h00092603; // lw	a2,0(s2)
-uut.memoria_instrucoes[22] = 32'h00251993; // slli	s3,a0,0x2
-uut.memoria_instrucoes[23] = 32'h0009a683; // lw	a3,0(s3)
-uut.memoria_instrucoes[24] = 32'h00d64e63; // blt	a2,a3,7c <left_smaller>
+uut.memoria_instrucoes[18] = 32'h0474d663; // bge	x9,x7,94 <merge_left_loop>
+uut.memoria_instrucoes[19] = 32'h04855463; // bge	x10,x8,94 <merge_left_loop>
+uut.memoria_instrucoes[20] = 32'h00249913; // slli	x18,x9,0x2
+uut.memoria_instrucoes[21] = 32'h00092603; // lw	x12,0(x18)
+uut.memoria_instrucoes[22] = 32'h00251993; // slli	x19,x10,0x2
+uut.memoria_instrucoes[23] = 32'h0009a683; // lw	x13,0(x19)
+uut.memoria_instrucoes[24] = 32'h00d64e63; // blt	x12,x13,7c <left_smaller>
 // right_smaller
-uut.memoria_instrucoes[25] = 32'h01458ab3; // add	s5,a1,s4
-uut.memoria_instrucoes[26] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.memoria_instrucoes[27] = 32'h00db2023; // sw	a3,0(s6)
-uut.memoria_instrucoes[28] = 32'h00158593; // addi	a1,a1,1
-uut.memoria_instrucoes[29] = 32'h00150513; // addi	a0,a0,1
+uut.memoria_instrucoes[25] = 32'h01458ab3; // add	x21,x11,x20
+uut.memoria_instrucoes[26] = 32'h002a9b13; // slli	x22,x21,0x2
+uut.memoria_instrucoes[27] = 32'h00db2023; // sw	x13,0(x22)
+uut.memoria_instrucoes[28] = 32'h00158593; // addi	x11,x11,1
+uut.memoria_instrucoes[29] = 32'h00150513; // addi	x10,x10,1
 uut.memoria_instrucoes[30] = 32'hfd1ff06f; // jal	zero,48 <merge_loop>
 // left_smaller
-uut.memoria_instrucoes[31] = 32'h01458ab3; // add	s5,a1,s4
-uut.memoria_instrucoes[32] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.memoria_instrucoes[33] = 32'h00cb2023; // sw	a2,0(s6)
-uut.memoria_instrucoes[34] = 32'h00158593; // addi	a1,a1,1
-uut.memoria_instrucoes[35] = 32'h00148493; // addi	s1,s1,1
+uut.memoria_instrucoes[31] = 32'h01458ab3; // add	x21,x11,x20
+uut.memoria_instrucoes[32] = 32'h002a9b13; // slli	x22,x21,0x2
+uut.memoria_instrucoes[33] = 32'h00cb2023; // sw	x12,0(x22)
+uut.memoria_instrucoes[34] = 32'h00158593; // addi	x11,x11,1
+uut.memoria_instrucoes[35] = 32'h00148493; // addi	x9,x9,1
 uut.memoria_instrucoes[36] = 32'hfb9ff06f; // jal	zero,48 <merge_loop>
 // merge_left_loop
-uut.memoria_instrucoes[37] = 32'h0274d263; // bge	s1,t2,b8 <copy_right_remaining>
-uut.memoria_instrucoes[38] = 32'h00249913; // slli	s2,s1,0x2
-uut.memoria_instrucoes[39] = 32'h00092603; // lw	a2,0(s2)
-uut.memoria_instrucoes[40] = 32'h01458ab3; // add	s5,a1,s4
-uut.memoria_instrucoes[41] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.memoria_instrucoes[42] = 32'h00cb2023; // sw	a2,0(s6)
-uut.memoria_instrucoes[43] = 32'h00158593; // addi	a1,a1,1
-uut.memoria_instrucoes[44] = 32'h00148493; // addi	s1,s1,1
+uut.memoria_instrucoes[37] = 32'h0274d263; // bge	x9,x7,b8 <copy_right_remaining>
+uut.memoria_instrucoes[38] = 32'h00249913; // slli	x18,x9,0x2
+uut.memoria_instrucoes[39] = 32'h00092603; // lw	x12,0(x18)
+uut.memoria_instrucoes[40] = 32'h01458ab3; // add	x21,x11,x20
+uut.memoria_instrucoes[41] = 32'h002a9b13; // slli	x22,x21,0x2
+uut.memoria_instrucoes[42] = 32'h00cb2023; // sw	x12,0(x22)
+uut.memoria_instrucoes[43] = 32'h00158593; // addi	x11,x11,1
+uut.memoria_instrucoes[44] = 32'h00148493; // addi	x9,x9,1
 uut.memoria_instrucoes[45] = 32'hfe1ff06f; // jal	zero,94 <merge_left_loop>
 // copy_right_remaining
-uut.memoria_instrucoes[46] = 32'h02855263; // bge	a0,s0,dc <copy_back>
-uut.memoria_instrucoes[47] = 32'h00251993; // slli	s3,a0,0x2
-uut.memoria_instrucoes[48] = 32'h0009a683; // lw	a3,0(s3)
-uut.memoria_instrucoes[49] = 32'h01458ab3; // add	s5,a1,s4
-uut.memoria_instrucoes[50] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.memoria_instrucoes[51] = 32'h00db2023; // sw	a3,0(s6)
-uut.memoria_instrucoes[52] = 32'h00158593; // addi	a1,a1,1
-uut.memoria_instrucoes[53] = 32'h00150513; // addi	a0,a0,1
+uut.memoria_instrucoes[46] = 32'h02855263; // bge	x10,x8,dc <copy_back>
+uut.memoria_instrucoes[47] = 32'h00251993; // slli	x19,x10,0x2
+uut.memoria_instrucoes[48] = 32'h0009a683; // lw	x13,0(x19)
+uut.memoria_instrucoes[49] = 32'h01458ab3; // add	x21,x11,x20
+uut.memoria_instrucoes[50] = 32'h002a9b13; // slli	x22,x21,0x2
+uut.memoria_instrucoes[51] = 32'h00db2023; // sw	x13,0(x22)
+uut.memoria_instrucoes[52] = 32'h00158593; // addi	x11,x11,1
+uut.memoria_instrucoes[53] = 32'h00150513; // addi	x10,x10,1
 uut.memoria_instrucoes[54] = 32'hfe1ff06f; // jal	zero,b8 <copy_right_remaining>
 // copy_back
-uut.memoria_instrucoes[55] = 32'h00030bb3; // add	s7,t1,zero
+uut.memoria_instrucoes[55] = 32'h00030bb3; // add	x23,x6,zero
 // copy_back_loop
-uut.memoria_instrucoes[56] = 32'h028bd063; // bge	s7,s0,100 <after_merge>
-uut.memoria_instrucoes[57] = 32'h014b8ab3; // add	s5,s7,s4
-uut.memoria_instrucoes[58] = 32'h002a9b13; // slli	s6,s5,0x2
-uut.memoria_instrucoes[59] = 32'h000b2c03; // lw	s8,0(s6)
-uut.memoria_instrucoes[60] = 32'h002b9c93; // slli	s9,s7,0x2
-uut.memoria_instrucoes[61] = 32'h018ca023; // sw	s8,0(s9)
-uut.memoria_instrucoes[62] = 32'h001b8b93; // addi	s7,s7,1
-uut.memoria_instrucoes[63] = 32'hfe5ff06f; // jal	zero,e0 <copy_back_loop>
+uut.memoria_instrucoes[56] = 32'h028bd063; // bge	x23,x8,100 <after_merge>
+uut.memoria_instrucoes[57] = 32'h014b8ab3; // add	x21,x23,x20
+uut.memoria_instrucoes[58] = 32'h002a9b13; // slli	x22,x21,0x2
+uut.memoria_instrucoes[59] = 32'h000b2c03; // lw	x24,0(x22)
+uut.memoria_instrucoes[60] = 32'h002b9c93; // slli	x25,x23,0x2
+uut.memoria_instrucoes[61] = 32'h018ca023; // sw	x24,0(x25)
+uut.memoria_instrucoes[62] = 32'h001b8b93; // addi	x23,x23,1
+uut.memoria_instrucoes[63] = 32'hfe5ff06f; // jal zero,e0 <copy_back_loop>
 // after_merge
-uut.memoria_instrucoes[64] = 32'h01130333; // add	t1,t1,a7
+uut.memoria_instrucoes[64] = 32'h01130333; // add	x6,x6,x17
 uut.memoria_instrucoes[65] = 32'hf0dff06f; // jal	zero,10 <i_loop>
 // after_i_loop
-uut.memoria_instrucoes[66] = 32'h00129293; // slli	t0,t0,0x1
+uut.memoria_instrucoes[66] = 32'h00129293; // slli	x5,x5,0x1
 uut.memoria_instrucoes[67] = 32'hefdff06f; // jal	zero,8 <width_loop>
 // done
 uut.memoria_instrucoes[68] = 32'h000000ef; // jal	ra,110 <done>

@@ -20,6 +20,6 @@ arquivo .s e utilizar os seguintes comandos no Terminal para gerar cada instruç
       # pega tudo a partir do mnemônico
       inst   = substr($0, index($0,$3))
       sub(/^[[:space:]]+/, "", inst)
-      printf "uut.instr_mem[%d] = 32'\''h%s; // %s\n", idx, code, inst
+      printf "uut.memoria_instrucoes[%d] = 32'\''h%s; // %s\n", idx, code, inst
     }
   ' > mergesort.txt

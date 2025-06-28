@@ -7,6 +7,7 @@ Verilog Simulator: ModelSim, Icarus Verilog ou outro de sua preferência
 ## 🚀 Como Usar
 ### 1° Clone o repositório: 
 git clone https://github.com/KanjiSaiko/Verilog-micro-processador-RISC-V-Pipeline
+
 cd seu-repositorio  
 
 ### 2° Compile o design e o testbench

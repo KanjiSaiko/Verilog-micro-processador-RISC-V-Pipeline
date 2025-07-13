@@ -83,32 +83,14 @@ module RISCV_Pipeline (
   //acesso memoria de instrucoes
   assign PC_4 = PC + 4;
 
+  wire [31:0] instrucao_do_processador;
   //=======================
   // Cache de Instruções (direta, 4 linhas)
   //=======================
-  wire [31:0] pc_do_miss_reg;        // << FIX #2: Registrador para travar o PC
-  wire memoria_pronta;
-  wire [127:0] instrucao_em_bloco;
-  wire requisicao_de_leitura; // Este sinal deve ser ativado pela FSM da sua cache
-  wire [31:0] instrucao_do_processador;
-  
-  memoria_principal u_memoria (
-      .clock(clock),
-      .reset(reset),
-      .requisicao_de_leitura(requisicao_de_leitura), // Controlado pela cache
-      .pc_do_miss_reg(pc_do_miss_reg),             // Endereço que a cache guardou
-      .instrucao_em_bloco(instrucao_em_bloco),          // Vai para a entrada de dados da cache
-      .memoria_pronta(memoria_pronta)
-  );
-  
   cache_instrucoes u_cacheInst (
       .clock(clock),
       .reset(reset),
       .PC(PC),
-      .memoria_pronta(memoria_pronta),
-      .instrucao_em_bloco(instrucao_em_bloco),
-      .requisicao_de_leitura(requisicao_de_leitura),
-      .pc_do_miss_reg(pc_do_miss_reg),
       .stall_cache_instrucoes(stall_cache_instrucoes),
       .instrucao_do_processador(instrucao_do_processador)
   );
@@ -118,11 +100,11 @@ module RISCV_Pipeline (
   // Estagio IF/ID
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || BranchOutCome) begin
+    if (reset || BranchOutCome || stall_cache_instrucoes) begin
       IFID_instr <= 0;
       IFID_PC    <= 0;
       IFID_PC4   <= 0;
-    end else if (stall  || stall_cache_instrucoes) begin
+    end else if (stall) begin
       IFID_instr    <= IFID_instr;
       IFID_PC       <= IFID_PC;
       IFID_PC4      <= IFID_PC4;
@@ -274,7 +256,7 @@ module RISCV_Pipeline (
   // Estagio ID/EX
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || BranchOutCome || stall || stall_cache_instrucoes) begin
+    if (reset || BranchOutCome || stall) begin
       IDEX_instr        <= 32'b0;
       IDEX_PC           <= 32'b0;
       IDEX_AluControl   <= 4'b0;

@@ -11,8 +11,12 @@ module tb_pipeline;
     .reset(reset)
   );
 
-
-  reg [31:0] pc_anterior;
+  reg [31:0] block_base_addr;
+  reg [9:0]  index0, index1, index2, index3;
+  reg [127:0] bloco_de_dados;
+  reg [4:0]  cache_index_miss;
+  reg [22:0] cache_tag_miss;
+  reg [31:0] memoria_instrucoes_tb [0:1023];
 
   //––––––––––––––––––––––––––––––––––––––––––––––––––––––
   // 1) Geracao de clock
@@ -25,9 +29,9 @@ module tb_pipeline;
   // 2) Pulso de reset
   initial begin
     reset = 1;
-    for(i=0;i<256;i=i+1)begin
-      uut.memoria_dados[i] = 0;
-      uut.u_memoria.memoria_instrucoes[i] <= 0;
+    for(i=0;i<1023;i=i+1)begin
+      uut.memoria_dados[i] <= 0;
+      memoria_instrucoes_tb[i] <= 0;
     end     
     #20;       // mantém reset alto por 20 ns
     reset = 0;
@@ -92,109 +96,150 @@ module tb_pipeline;
       uut.memoria_dados[48] = 32'd6;
       uut.memoria_dados[49] = 32'd73;
       // Algoritmo Mergesort para 4 elementos
-      // Formato: uut.u_memoria.memoria_instrucoes[index] = 32'b...;
+      // Formato: memoria_instrucoes_tb[index] = 32'b...;
       // --- Código de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
       // main
-      uut.u_memoria.memoria_instrucoes[0] = 32'h03200a13; // addi	x20,zero,50 
-      uut.u_memoria.memoria_instrucoes[1] = 32'h00100293; // addi	x5,zero,1
+      memoria_instrucoes_tb[0] = 32'h03200a13; // addi	x20,zero,50 
+      memoria_instrucoes_tb[1] = 32'h00100293; // addi	x5,zero,1
       // width_loop
-      uut.u_memoria.memoria_instrucoes[2] = 32'h1142d463; // bge	x5,x20,110 <done>
-      uut.u_memoria.memoria_instrucoes[3] = 32'h00000313; // addi	x6,zero,0
+      memoria_instrucoes_tb[2] = 32'h1142d463; // bge	x5,x20,110 <done>
+      memoria_instrucoes_tb[3] = 32'h00000313; // addi	x6,zero,0
       // i_loop
-      uut.u_memoria.memoria_instrucoes[4] = 32'h0f435c63; // bge	x6,x20,108 <after_i_loop>
-      uut.u_memoria.memoria_instrucoes[5] = 32'h005303b3; // add	x7,x6,x5
-      uut.u_memoria.memoria_instrucoes[6] = 32'h0143d463; // bge	x7,x20,20 <mid_eq_N>
-      uut.u_memoria.memoria_instrucoes[7] = 32'h0080006f; // jal	zero,24 <conx6>
+      memoria_instrucoes_tb[4] = 32'h0f435c63; // bge	x6,x20,108 <after_i_loop>
+      memoria_instrucoes_tb[5] = 32'h005303b3; // add	x7,x6,x5
+      memoria_instrucoes_tb[6] = 32'h0143d463; // bge	x7,x20,20 <mid_eq_N>
+      memoria_instrucoes_tb[7] = 32'h0080006f; // jal	zero,24 <conx6>
       // mid_eq_N
-      uut.u_memoria.memoria_instrucoes[8] = 32'h000a03b3; // add	x7,x20,zero
+      memoria_instrucoes_tb[8] = 32'h000a03b3; // add	x7,x20,zero
       // conx6
-      uut.u_memoria.memoria_instrucoes[9] = 32'h00129893; // slli	x17,x5,0x1
-      uut.u_memoria.memoria_instrucoes[10] = 32'h01130433; // add	x8,x6,x17
-      uut.u_memoria.memoria_instrucoes[11] = 32'h01445463; // bge	x8,x20,34 <end_eq_N>
-      uut.u_memoria.memoria_instrucoes[12] = 32'h0080006f; // jal	zero,38 <conx7>
+      memoria_instrucoes_tb[9] = 32'h00129893; // slli	x17,x5,0x1
+      memoria_instrucoes_tb[10] = 32'h01130433; // add	x8,x6,x17
+      memoria_instrucoes_tb[11] = 32'h01445463; // bge	x8,x20,34 <end_eq_N>
+      memoria_instrucoes_tb[12] = 32'h0080006f; // jal	zero,38 <conx7>
       // end_eq_N
-      uut.u_memoria.memoria_instrucoes[13] = 32'h000a0433; // add	x8,x20,zero
+      memoria_instrucoes_tb[13] = 32'h000a0433; // add	x8,x20,zero
       // conx7
-      uut.u_memoria.memoria_instrucoes[14] = 32'h0c83d463; // bge	x7,x8,100 <after_merge>
-      uut.u_memoria.memoria_instrucoes[15] = 32'h000304b3; // add	x9,x6,zero
-      uut.u_memoria.memoria_instrucoes[16] = 32'h00038533; // add	x10,x7,zero
-      uut.u_memoria.memoria_instrucoes[17] = 32'h000305b3; // add	x11,x6,zero
+      memoria_instrucoes_tb[14] = 32'h0c83d463; // bge	x7,x8,100 <after_merge>
+      memoria_instrucoes_tb[15] = 32'h000304b3; // add	x9,x6,zero
+      memoria_instrucoes_tb[16] = 32'h00038533; // add	x10,x7,zero
+      memoria_instrucoes_tb[17] = 32'h000305b3; // add	x11,x6,zero
       // merge_loop
-      uut.u_memoria.memoria_instrucoes[18] = 32'h0474d663; // bge	x9,x7,94 <merge_left_loop>
-      uut.u_memoria.memoria_instrucoes[19] = 32'h04855463; // bge	x10,x8,94 <merge_left_loop>
-      uut.u_memoria.memoria_instrucoes[20] = 32'h00249913; // slli	x18,x9,0x2
-      uut.u_memoria.memoria_instrucoes[21] = 32'h00092603; // lw	x12,0(x18)
-      uut.u_memoria.memoria_instrucoes[22] = 32'h00251993; // slli	x19,x10,0x2
-      uut.u_memoria.memoria_instrucoes[23] = 32'h0009a683; // lw	x13,0(x19)
-      uut.u_memoria.memoria_instrucoes[24] = 32'h00d64e63; // blt	x12,x13,7c <left_smaller>
+      memoria_instrucoes_tb[18] = 32'h0474d663; // bge	x9,x7,94 <merge_left_loop>
+      memoria_instrucoes_tb[19] = 32'h04855463; // bge	x10,x8,94 <merge_left_loop>
+      memoria_instrucoes_tb[20] = 32'h00249913; // slli	x18,x9,0x2
+      memoria_instrucoes_tb[21] = 32'h00092603; // lw	x12,0(x18)
+      memoria_instrucoes_tb[22] = 32'h00251993; // slli	x19,x10,0x2
+      memoria_instrucoes_tb[23] = 32'h0009a683; // lw	x13,0(x19)
+      memoria_instrucoes_tb[24] = 32'h00d64e63; // blt	x12,x13,7c <left_smaller>
       // right_smaller
-      uut.u_memoria.memoria_instrucoes[25] = 32'h01458ab3; // add	x21,x11,x20
-      uut.u_memoria.memoria_instrucoes[26] = 32'h002a9b13; // slli	x22,x21,0x2
-      uut.u_memoria.memoria_instrucoes[27] = 32'h00db2023; // sw	x13,0(x22)
-      uut.u_memoria.memoria_instrucoes[28] = 32'h00158593; // addi	x11,x11,1
-      uut.u_memoria.memoria_instrucoes[29] = 32'h00150513; // addi	x10,x10,1
-      uut.u_memoria.memoria_instrucoes[30] = 32'hfd1ff06f; // jal	zero,48 <merge_loop>
+      memoria_instrucoes_tb[25] = 32'h01458ab3; // add	x21,x11,x20
+      memoria_instrucoes_tb[26] = 32'h002a9b13; // slli	x22,x21,0x2
+      memoria_instrucoes_tb[27] = 32'h00db2023; // sw	x13,0(x22)
+      memoria_instrucoes_tb[28] = 32'h00158593; // addi	x11,x11,1
+      memoria_instrucoes_tb[29] = 32'h00150513; // addi	x10,x10,1
+      memoria_instrucoes_tb[30] = 32'hfd1ff06f; // jal	zero,48 <merge_loop>
       // left_smaller
-      uut.u_memoria.memoria_instrucoes[31] = 32'h01458ab3; // add	x21,x11,x20
-      uut.u_memoria.memoria_instrucoes[32] = 32'h002a9b13; // slli	x22,x21,0x2
-      uut.u_memoria.memoria_instrucoes[33] = 32'h00cb2023; // sw	x12,0(x22)
-      uut.u_memoria.memoria_instrucoes[34] = 32'h00158593; // addi	x11,x11,1
-      uut.u_memoria.memoria_instrucoes[35] = 32'h00148493; // addi	x9,x9,1
-      uut.u_memoria.memoria_instrucoes[36] = 32'hfb9ff06f; // jal	zero,48 <merge_loop>
+      memoria_instrucoes_tb[31] = 32'h01458ab3; // add	x21,x11,x20
+      memoria_instrucoes_tb[32] = 32'h002a9b13; // slli	x22,x21,0x2
+      memoria_instrucoes_tb[33] = 32'h00cb2023; // sw	x12,0(x22)
+      memoria_instrucoes_tb[34] = 32'h00158593; // addi	x11,x11,1
+      memoria_instrucoes_tb[35] = 32'h00148493; // addi	x9,x9,1
+      memoria_instrucoes_tb[36] = 32'hfb9ff06f; // jal	zero,48 <merge_loop>
       // merge_left_loop
-      uut.u_memoria.memoria_instrucoes[37] = 32'h0274d263; // bge	x9,x7,b8 <copy_right_remaining>
-      uut.u_memoria.memoria_instrucoes[38] = 32'h00249913; // slli	x18,x9,0x2
-      uut.u_memoria.memoria_instrucoes[39] = 32'h00092603; // lw	x12,0(x18)
-      uut.u_memoria.memoria_instrucoes[40] = 32'h01458ab3; // add	x21,x11,x20
-      uut.u_memoria.memoria_instrucoes[41] = 32'h002a9b13; // slli	x22,x21,0x2
-      uut.u_memoria.memoria_instrucoes[42] = 32'h00cb2023; // sw	x12,0(x22)
-      uut.u_memoria.memoria_instrucoes[43] = 32'h00158593; // addi	x11,x11,1
-      uut.u_memoria.memoria_instrucoes[44] = 32'h00148493; // addi	x9,x9,1
-      uut.u_memoria.memoria_instrucoes[45] = 32'hfe1ff06f; // jal	zero,94 <merge_left_loop>
+      memoria_instrucoes_tb[37] = 32'h0274d263; // bge	x9,x7,b8 <copy_right_remaining>
+      memoria_instrucoes_tb[38] = 32'h00249913; // slli	x18,x9,0x2
+      memoria_instrucoes_tb[39] = 32'h00092603; // lw	x12,0(x18)
+      memoria_instrucoes_tb[40] = 32'h01458ab3; // add	x21,x11,x20
+      memoria_instrucoes_tb[41] = 32'h002a9b13; // slli	x22,x21,0x2
+      memoria_instrucoes_tb[42] = 32'h00cb2023; // sw	x12,0(x22)
+      memoria_instrucoes_tb[43] = 32'h00158593; // addi	x11,x11,1
+      memoria_instrucoes_tb[44] = 32'h00148493; // addi	x9,x9,1
+      memoria_instrucoes_tb[45] = 32'hfe1ff06f; // jal	zero,94 <merge_left_loop>
       // copy_right_remaining
-      uut.u_memoria.memoria_instrucoes[46] = 32'h02855263; // bge	x10,x8,dc <copy_back>
-      uut.u_memoria.memoria_instrucoes[47] = 32'h00251993; // slli	x19,x10,0x2
-      uut.u_memoria.memoria_instrucoes[48] = 32'h0009a683; // lw	x13,0(x19)
-      uut.u_memoria.memoria_instrucoes[49] = 32'h01458ab3; // add	x21,x11,x20
-      uut.u_memoria.memoria_instrucoes[50] = 32'h002a9b13; // slli	x22,x21,0x2
-      uut.u_memoria.memoria_instrucoes[51] = 32'h00db2023; // sw	x13,0(x22)
-      uut.u_memoria.memoria_instrucoes[52] = 32'h00158593; // addi	x11,x11,1
-      uut.u_memoria.memoria_instrucoes[53] = 32'h00150513; // addi	x10,x10,1
-      uut.u_memoria.memoria_instrucoes[54] = 32'hfe1ff06f; // jal	zero,b8 <copy_right_remaining>
+      memoria_instrucoes_tb[46] = 32'h02855263; // bge	x10,x8,dc <copy_back>
+      memoria_instrucoes_tb[47] = 32'h00251993; // slli	x19,x10,0x2
+      memoria_instrucoes_tb[48] = 32'h0009a683; // lw	x13,0(x19)
+      memoria_instrucoes_tb[49] = 32'h01458ab3; // add	x21,x11,x20
+      memoria_instrucoes_tb[50] = 32'h002a9b13; // slli	x22,x21,0x2
+      memoria_instrucoes_tb[51] = 32'h00db2023; // sw	x13,0(x22)
+      memoria_instrucoes_tb[52] = 32'h00158593; // addi	x11,x11,1
+      memoria_instrucoes_tb[53] = 32'h00150513; // addi	x10,x10,1
+      memoria_instrucoes_tb[54] = 32'hfe1ff06f; // jal	zero,b8 <copy_right_remaining>
       // copy_back
-      uut.u_memoria.memoria_instrucoes[55] = 32'h00030bb3; // add	x23,x6,zero
+      memoria_instrucoes_tb[55] = 32'h00030bb3; // add	x23,x6,zero
       // copy_back_loop
-      uut.u_memoria.memoria_instrucoes[56] = 32'h028bd063; // bge	x23,x8,100 <after_merge>
-      uut.u_memoria.memoria_instrucoes[57] = 32'h014b8ab3; // add	x21,x23,x20
-      uut.u_memoria.memoria_instrucoes[58] = 32'h002a9b13; // slli	x22,x21,0x2
-      uut.u_memoria.memoria_instrucoes[59] = 32'h000b2c03; // lw	x24,0(x22)
-      uut.u_memoria.memoria_instrucoes[60] = 32'h002b9c93; // slli	x25,x23,0x2
-      uut.u_memoria.memoria_instrucoes[61] = 32'h018ca023; // sw	x24,0(x25)
-      uut.u_memoria.memoria_instrucoes[62] = 32'h001b8b93; // addi	x23,x23,1
-      uut.u_memoria.memoria_instrucoes[63] = 32'hfe5ff06f; // jal zero,e0 <copy_back_loop>
+      memoria_instrucoes_tb[56] = 32'h028bd063; // bge	x23,x8,100 <after_merge>
+      memoria_instrucoes_tb[57] = 32'h014b8ab3; // add	x21,x23,x20
+      memoria_instrucoes_tb[58] = 32'h002a9b13; // slli	x22,x21,0x2
+      memoria_instrucoes_tb[59] = 32'h000b2c03; // lw	x24,0(x22)
+      memoria_instrucoes_tb[60] = 32'h002b9c93; // slli	x25,x23,0x2
+      memoria_instrucoes_tb[61] = 32'h018ca023; // sw	x24,0(x25)
+      memoria_instrucoes_tb[62] = 32'h001b8b93; // addi	x23,x23,1
+      memoria_instrucoes_tb[63] = 32'hfe5ff06f; // jal zero,e0 <copy_back_loop>
       // after_merge
-      uut.u_memoria.memoria_instrucoes[64] = 32'h01130333; // add	x6,x6,x17
-      uut.u_memoria.memoria_instrucoes[65] = 32'hf0dff06f; // jal	zero,10 <i_loop>
+      memoria_instrucoes_tb[64] = 32'h01130333; // add	x6,x6,x17
+      memoria_instrucoes_tb[65] = 32'hf0dff06f; // jal	zero,10 <i_loop>
       // after_i_loop
-      uut.u_memoria.memoria_instrucoes[66] = 32'h00129293; // slli	x5,x5,0x1
-      uut.u_memoria.memoria_instrucoes[67] = 32'hefdff06f; // jal	zero,8 <width_loop>
+      memoria_instrucoes_tb[66] = 32'h00129293; // slli	x5,x5,0x1
+      memoria_instrucoes_tb[67] = 32'hefdff06f; // jal	zero,8 <width_loop>
       // done
-      uut.u_memoria.memoria_instrucoes[68] = 32'h000000ef; // jal	ra,110 <done>
+      memoria_instrucoes_tb[68] = 32'h000000ef; // jal	ra,110 <done>
   end
+
+
+
+  // Lógica de Simulação do Atraso da Cache (o "cérebro" do testbench)
+  always @(posedge clock) begin
+    if (!reset && uut.stall_cache_instrucoes) begin
+        
+        $display(" Cache de Instruções MISS no PC = %0d. Simulando latência...", uut.PC);
+
+        // A. Espera de 4 ciclos de clock (simulando 40ns de atraso)
+        repeat (3) @(posedge clock);
+        
+        $display("Latência de 3 ciclos concluída. Preenchendo a cache...");
+
+        //Preparar os dados para preencher a cache
+        block_base_addr = {uut.PC[31:4], 4'b0000};
+        
+        index0 = block_base_addr >> 2;
+        index1 = (block_base_addr + 4)>>2;
+        index2 = (block_base_addr + 8)>>2;
+        index3 = (block_base_addr + 12)>>2;
+
+        // Monta o bloco de 128 bits (16 bytes)
+        bloco_de_dados = {memoria_instrucoes_tb[index3], memoria_instrucoes_tb[index2], 
+                          memoria_instrucoes_tb[index1], memoria_instrucoes_tb[index0]};
+
+        // C. Preencher a cache
+        cache_index_miss = uut.PC[8:4];
+        cache_tag_miss   = uut.PC[31:9];
+
+        uut.u_cacheInst.instr_cache_data[cache_index_miss]  <= bloco_de_dados;
+        uut.u_cacheInst.instr_cache_tag[cache_index_miss]   <= cache_tag_miss;
+        uut.u_cacheInst.instr_cache_valid[cache_index_miss] <= 1'b1;
+
+        $display("Cache preenchida para o indice %0d com a tag %0d. Pipeline vai continuar.", cache_index_miss, cache_tag_miss);
+    end
+  end
+
   wire signed [31:0] extended_I_TYPE = $signed(uut.IFID_instr[31:20]);
   wire signed [31:0] extended_B_TYPE = $signed({{20{uut.IFID_instr[31]}}, uut.IFID_instr[7], uut.IFID_instr[30:25], uut.IFID_instr[11:8], 1'b0});
   wire signed [31:0] extended_S_TYPE = $signed({uut.IFID_instr[31:25], uut.IFID_instr[11:7]});
   wire signed [31:0] extended_J_TYPE = $signed({uut.IFID_instr[31], uut.IFID_instr[19:12], uut.IFID_instr[20], uut.IFID_instr[30:21], 1'b0});
   reg signed [31:0] EXMEM_imm, MEMWB_imm, WB_imm, WB_instr, WB_data;
   reg [4:0] WB_rd;
+
+
   //PRINTANDO INSTRUCAO E ASSEMBLY
 initial begin
   wait (reset == 0);
-  pc_anterior = 32'b0;
   forever begin
   @(posedge clock);
-  if(reset == 0) begin
+  if (reset == 1) begin
+    WB_instr <= 0;
+  end else if(reset == 0) begin
     EXMEM_imm <= uut.IDEX_imm;
     MEMWB_imm <= EXMEM_imm;
     WB_imm <= MEMWB_imm;
@@ -203,24 +248,10 @@ initial begin
     WB_data <= uut.RegWriteData;
     $display("\n\nPC: %d", uut.PC);
     // O estado da cache é a informação mais crucial agora
-    $write("ESTADO DA CACHE: ");
-    case (uut.u_cacheInst.estado_cache) // << AJUSTE O CAMINHO AQUI
-        2'b00: $write("IDLE      ");
-        2'b01: $write("FETCH_MEM ");
-        2'b10: $write("REFILL    ");
-        default: $write("UNDEFINED ");
-    endcase
 
-    $display(" | HIT: %b | STALL: %b | REQ_MEM: %b | MEM_PRONTA: %b", 
+    $display(" | HIT: %b | STALL: %b", 
               uut.u_cacheInst.cache_instr_hit,          // << Supondo que este fio existe no topo
-              uut.stall_cache_instrucoes,   // << Supondo que este fio existe no topo
-              uut.requisicao_de_leitura,    // << Supondo que este fio existe no topo
-              uut.memoria_pronta);          // << Supondo que este fio existe no topo 
-    $display("Bloco 0 em Hexa: %0h", uut.u_cacheInst.instr_cache_data[0]);
-    $display("Bloco 1 em Hexa: %0h", uut.u_cacheInst.instr_cache_data[1]);
-    $display("indice0: %0d", uut.u_memoria.index0);
-    $display("Bloco feito na memoria de instrucoes: %0h", uut.u_memoria.instrucao_em_bloco);
-
+              uut.stall_cache_instrucoes);
     case (uut.IFID_instr[6:0])
         7'b0110011: begin // R-Type
           // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO IF
@@ -479,7 +510,6 @@ initial begin
     endcase
 
         //$display("Valor de IDEX_r1: %0d  || EXMEM_r1: %0d", uut.IDEX_r1, uut.EXMEM_r1);
-      pc_anterior = uut.PC;
       $display("--------------------------------------------------------------------------------");
       $display("Reg[0]: %0d   || Reg[1]: %0d   || Reg[2]: %0d   || Reg[3]: %0d", uut.banco_regs[0], uut.banco_regs[1], uut.banco_regs[2], uut.banco_regs[3]);
       $display("Reg[4]: %0d   || Reg[5]: %0d   || Reg[6]: %0d   || Reg[7]: %0d", uut.banco_regs[4], uut.banco_regs[5], uut.banco_regs[6], uut.banco_regs[7]);
@@ -496,7 +526,7 @@ initial begin
       $display("memoria_dados[16] = %0d     || memoria_dados[17] = %0d    || memoria_dados[18]  = %0d   || memoria_dados[19] = %0d", uut.memoria_dados[16], uut.memoria_dados[17], uut.memoria_dados[18], uut.memoria_dados[19]);
       $display("memoria_dados[20] = %0d    || memoria_dados[21] = %0d   || memoria_dados[22]  = %0d   || memoria_dados[23] = %0d", uut.memoria_dados[20], uut.memoria_dados[21], uut.memoria_dados[22], uut.memoria_dados[23]);
       $display("--------------------------------------------------------------------------------");
-      $display("Estado da cache: %0d || cache_instr_hit: %0d", uut.u_cacheInst.estado_cache, uut.u_cacheInst.cache_instr_hit);
+      $display("cache_instr_hit: %0d", uut.u_cacheInst.cache_instr_hit);
       if (uut.stall_cache_instrucoes)
         $display("MISS NA CACHE DE INSTRUCAO -> STALL");
       else

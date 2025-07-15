@@ -8,55 +8,54 @@ module RISCV_Pipeline (
   //===============================
   // Memórias e banco de registradores
   //===============================
-  reg signed [31:0] memoria_dados  [0:1023];   // Memoria de dados de 1kb
+  reg [31:0] memoria_instrucoes [0:1023];
+  reg signed [31:0] memoria_dados [0:1023];
   reg signed [31:0] banco_regs [0:31];   // 32 registradores
 
-  //======================
-  // Registradores do Pipeline
-  //======================
+//======================
+// Registradores do Pipeline
+//======================
 
-
-// --- Contador de Programa ---
+  // --- Contador de Programa ---
     reg [31:0] PC;
     wire [31:0] PC_4; 
 
-// --- Estágio IF/ID ---
-  reg [31:0] IFID_instr, IFID_PC, IFID_PC4;
+  // --- Estágio IF/ID ---
+    reg [31:0] IFID_instr, IFID_PC, IFID_PC4;
 
-// --- Estágio ID/EX ---
+  // --- Estágio ID/EX ---
 
-  // Sinais de 32 bits (Dados, Endereços, Imediatos)
-  reg [31:0] IDEX_instr, IDEX_PC, IDEX_PC4;
-  reg signed [31:0] IDEX_imm, IDEX_r1, IDEX_r2;
-  // Sinais de Controle e Flags (1 bit cada)
-  reg IDEX_RegWrite, IDEX_MemRead, IDEX_MemWrite, IDEX_BranchBxx, IDEX_BranchJal, IDEX_MemToReg;
-  reg IDEX_BranchJalr, IDEX_BranchOnSign, IDEX_AluSrcA, IDEX_AluSrcB, IDEX_BranchVal;
-  // Campos da Instrução e Sinais de Controle de Múltiplos Bits
-  reg [6:0]  IDEX_funct7;
-  reg [4:0]  IDEX_rd, IDEX_indiceR1, IDEX_indiceR2, IDEX_shamt;
-  reg [3:0]  IDEX_AluControl;
-  reg [2:0]  IDEX_funct3;
+    // Sinais de 32 bits (Dados, Endereços, Imediatos)
+    reg [31:0] IDEX_instr, IDEX_PC, IDEX_PC4;
+    reg signed [31:0] IDEX_imm, IDEX_r1, IDEX_r2;
+    // Sinais de Controle e Flags (1 bit cada)
+    reg IDEX_RegWrite, IDEX_MemRead, IDEX_MemWrite, IDEX_BranchBxx, IDEX_BranchJal, IDEX_MemToReg;
+    reg IDEX_BranchJalr, IDEX_BranchOnSign, IDEX_AluSrcA, IDEX_AluSrcB, IDEX_BranchVal;
+    // Campos da Instruçao e Sinais de Controle de Múltiplos Bits
+    reg [6:0]  IDEX_funct7;
+    reg [4:0]  IDEX_rd, IDEX_indiceR1, IDEX_indiceR2, IDEX_shamt;
+    reg [3:0]  IDEX_AluControl;
+    reg [2:0]  IDEX_funct3;
 
-// --- Estágio EX/MEM ---
+  // --- Estágio EX/MEM ---
 
-  // Sinais de Dados e Endereços (32 bits)
-  reg [31:0] EXMEM_instr, EXMEM_Somatorio_PCeIMM, EXMEM_PC4;
-  reg signed [31:0] EXMEM_AluOut, EXMEM_WriteData;
-  // Endereço do Registrador de Destino (5 bits)
-  reg [4:0]  EXMEM_rd;
-  // Sinais de Controle e Flags (1 bit cada)
-  reg EXMEM_regwrite, EXMEM_MemRead, EXMEM_MemWrite, EXMEM_BranchVal, EXMEM_BranchJal, EXMEM_MemToReg;
-  reg EXMEM_BranchJalr, EXMEM_BranchBxx, EXMEM_BranchOnSign, EXMEM_flagZero, EXMEM_flagNegative;
+    // Sinais de Dados e Endereços (32 bits)
+    reg [31:0] EXMEM_instr, EXMEM_Somatorio_PCeIMM, EXMEM_PC4;
+    reg signed [31:0] EXMEM_AluOut, EXMEM_WriteData;
+    // Endereço do Registrador de Destino (5 bits)
+    reg [4:0]  EXMEM_rd;
+    // Sinais de Controle e Flags (1 bit cada)
+    reg EXMEM_regwrite, EXMEM_MemRead, EXMEM_MemWrite, EXMEM_BranchVal, EXMEM_BranchJal, EXMEM_MemToReg;
+    reg EXMEM_BranchJalr, EXMEM_BranchBxx, EXMEM_BranchOnSign, EXMEM_flagZero, EXMEM_flagNegative;
 
-// --- Estágio MEM/WB ---
+  // --- Estágio MEM/WB ---
 
-  // Sinais de Dados (32 bits)
-  reg [31:0] MEMWB_instr, MEMWB_Data, MEMWB_DadoMUX, MEMWB_Dado, MEMWB_Dado_Lido;
-  // Endereço do Registrador de Destino (5 bits)
-  reg [4:0]  MEMWB_rd;
-  // Sinais de Controle (1 bit cada)
-  reg        MEMWB_regwrite, MEMWB_MemToReg;
-
+    // Sinais de Dados (32 bits)
+    reg [31:0] MEMWB_instr, MEMWB_Data, MEMWB_DadoMUX, MEMWB_Dado, MEMWB_Dado_Lido;
+    // Endereço do Registrador de Destino (5 bits)
+    reg [4:0]  MEMWB_rd;
+    // Sinais de Controle (1 bit cada)
+    reg        MEMWB_regwrite, MEMWB_MemToReg;
     
 //Se umma instrucao precisa do dado de um load que esta ainda na etapa EX/MEM 
 //cria um stall ate ele receber o resultado da memoria no proximo clock
@@ -67,20 +66,21 @@ module RISCV_Pipeline (
   wire [31:0] Dado_MUX, RegWriteData;
 
   wire stall_cache_instrucoes, stall_cache_dados;
+
   //=======================
   // Atualizaçao do PC
   //=======================
   always @(posedge clock or posedge reset) begin
     if (reset) begin
       PC <= 0;
-      for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
+      for (i = 0; i < 32; i = i + 1) banco_regs[i] <= 0;
     end else begin
       PC <= (BranchOutCome) ? branch_target           : 
             (stall || stall_cache_instrucoes || stall_cache_dados)  ?  PC  :
              PC_4;
     end  
   end
-  //acesso memoria de instrucoes
+
   assign PC_4 = PC + 4;
 
   wire [31:0] instrucao_do_processador;
@@ -138,8 +138,8 @@ module RISCV_Pipeline (
     Imediato      = 0;
     BranchOnSign  = 0; //0 para flag zero || 1 para flag negative
     BranchVal     = 0;
-    AluSrcA       = 0; // Padrão: usa rs1 || Se for 1 -> Utiliza PC
-    AluSrcB       = 0; // Padrão: usa rs2 || Se for 1 -> Utiliza IMM
+    AluSrcA       = 0; // Padrao: usa rs1 || Se for 1 -> Utiliza PC
+    AluSrcB       = 0; // Padrao: usa rs2 || Se for 1 -> Utiliza IMM
 
     case (IFID_instr[6:0])
       7'b0010011: begin// ADDI e SLRI e SLLI
@@ -149,8 +149,8 @@ module RISCV_Pipeline (
         Imediato      = {{20{IFID_instr[31]}}, IFID_instr[31:20]};
         case(IFID_instr[14:12])
           3'b101: AluControl = 4'b0011; //SRLI
-          3'b010: AluControl = 4'b0101; // SLTI <-- ADICIONADO
-          3'b011: AluControl = 4'b0110; // SLTIU <-- ADICIONADO
+          3'b010: AluControl = 4'b0101; // SLTI
+          3'b011: AluControl = 4'b0110; // SLTIU 
           3'b001: AluControl = 4'b0100; //SLLI
         endcase
           
@@ -187,8 +187,8 @@ module RISCV_Pipeline (
           7'b0000000:begin // funct7 para MUL/DIV/etc.
             case(IFID_instr[14:12]) // Checa o funct3
               3'b000: AluControl = 4'b0001; // ADD
-              3'b010: AluControl = 4'b0101; // SLT  <-- NOVO
-              3'b011: AluControl = 4'b0110; // SLTU <-- NOVO
+              3'b010: AluControl = 4'b0101; // SLT 
+              3'b011: AluControl = 4'b0110; // SLTU
               default: AluControl = 4'bx;
             endcase
           end
@@ -207,7 +207,7 @@ module RISCV_Pipeline (
 
       7'b1100011: begin // Tipo B
         BranchBxx     = 1;
-        AluControl    = 4'b0010; //SUB (generico e facil saber quando tomar o desvio)
+        AluControl    = 4'b0010; //SUB 
         Imediato      = {{20{IFID_instr[31]}}, IFID_instr[7], IFID_instr[30:25], IFID_instr[11:8], 1'b0};
         case(IFID_instr[14:12])
           3'b000: BranchVal =  0;//beq
@@ -337,7 +337,7 @@ module RISCV_Pipeline (
   //=======================
   // Forwarding Logic
   //=======================
-      //Loads nao podem entrar pois sequer pegaram valor na memoria, e resultado da ula é endereço e não valor do registrador
+      //Loads nao podem entrar pois sequer pegaram valor na memoria, e resultado da ula é endereço e nao valor do registrador
     wire fwdEXMEM_r1 = EXMEM_regwrite && !EXMEM_MemRead && (EXMEM_rd == IDEX_indiceR1) && (EXMEM_rd != 0);
     wire fwdEXMEM_r2 = EXMEM_regwrite && !EXMEM_MemRead && (EXMEM_rd == IDEX_indiceR2) && (EXMEM_rd != 0);
 
@@ -401,7 +401,7 @@ module RISCV_Pipeline (
   //====================
    always @(posedge clock or posedge reset) begin
     if (reset || BranchOutCome) begin
-    // Atribuições para limpar/anular a instrução no estágio EX/MEM
+    // Atribuições para limpar/anular a instruçao no estágio EX/MEM
       EXMEM_instr          <= 32'b0;
       EXMEM_regwrite       <= 1'b0;
       EXMEM_MemRead        <= 1'b0;
@@ -468,15 +468,15 @@ module RISCV_Pipeline (
   assign BranchOutCome = (AND_Branch || BranchJalx);
 
   assign branch_target = EXMEM_BranchJalr ? EXMEM_AluOut   :
-                              EXMEM_Somatorio_PCeIMM;
+                        EXMEM_Somatorio_PCeIMM;
   
 
 
   assign Dado_MUX =  BranchJalx  ?  EXMEM_PC4  :
-                          EXMEM_AluOut;
+                    EXMEM_AluOut;
                           
   //====================
-  // Cache de Dados (direta, 4 linhas) Leitura Combinacional e Escrita Sequencial
+  // Cache de Dados
   //====================
   wire [31:0] dado_lido_da_cache;
 

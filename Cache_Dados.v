@@ -28,7 +28,7 @@ module cache_dados (
 
     wire [127:0] bloco_selecionado = data_cache_data[cache_index];
     
-    // Saída do dado lido (só é válido em caso de hit)
+    // Saída do dado lido (só é valido em caso de hit)
     assign dado_lido = (seletor_de_palavra == 2'b00) ? bloco_selecionado[31:0]   :
                        (seletor_de_palavra == 2'b01) ? bloco_selecionado[63:32]  :
                        (seletor_de_palavra == 2'b10) ? bloco_selecionado[95:64]  :

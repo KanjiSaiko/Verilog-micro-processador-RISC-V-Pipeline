@@ -66,7 +66,7 @@ module RISCV_Pipeline (
   wire BranchOutCome;
   wire [31:0] Dado_MUX, RegWriteData;
 
-  wire stall_cache_instrucoes;
+  wire stall_cache_instrucoes, stall_cache_dados;
   //=======================
   // Atualizaçao do PC
   //=======================
@@ -76,7 +76,7 @@ module RISCV_Pipeline (
       for (i = 0; i < 32; i = i + 1) banco_regs[i] = 0;
     end else begin
       PC <= (BranchOutCome) ? branch_target           : 
-            (stall || stall_cache_instrucoes)  ?  PC  :
+            (stall || stall_cache_instrucoes || stall_cache_dados)  ?  PC  :
              PC_4;
     end  
   end
@@ -100,14 +100,14 @@ module RISCV_Pipeline (
   // Estagio IF/ID
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || BranchOutCome || stall_cache_instrucoes) begin
-      IFID_instr <= 0;
-      IFID_PC    <= 0;
-      IFID_PC4   <= 0;
-    end else if (stall) begin
+    if (stall || stall_cache_dados) begin
       IFID_instr    <= IFID_instr;
       IFID_PC       <= IFID_PC;
       IFID_PC4      <= IFID_PC4;
+    end else if (reset || BranchOutCome || stall_cache_instrucoes) begin
+      IFID_instr <= 0;
+      IFID_PC    <= 0;
+      IFID_PC4   <= 0;
     end
     else begin
       IFID_instr    <= instrucao_do_processador;
@@ -281,8 +281,32 @@ module RISCV_Pipeline (
       IDEX_funct7       <= 7'b0;
       IDEX_imm          <= 32'b0;
       IDEX_PC4          <= 32'b0;
-    end
-    else begin
+    end else if(stall_cache_dados) begin
+      IDEX_instr      <= IDEX_instr;
+      IDEX_PC         <= IDEX_PC;
+      IDEX_AluControl <= IDEX_AluControl;
+      IDEX_AluSrcA    <= IDEX_AluSrcA;
+      IDEX_AluSrcB    <= IDEX_AluSrcB;
+      IDEX_BranchVal  <= IDEX_BranchVal;
+      IDEX_BranchJal  <= IDEX_BranchJal;
+      IDEX_BranchJalr <= IDEX_BranchJalr;
+      IDEX_BranchBxx  <= IDEX_BranchBxx;
+      IDEX_BranchOnSign <= IDEX_BranchOnSign;
+      IDEX_RegWrite   <= IDEX_RegWrite;
+      IDEX_MemRead    <= IDEX_MemRead;
+      IDEX_MemWrite   <= IDEX_MemWrite;
+      IDEX_MemToReg   <= IDEX_MemToReg;
+      IDEX_r1         <= IDEX_r1;
+      IDEX_r2         <= IDEX_r2;
+      IDEX_rd         <= IDEX_rd;
+      IDEX_indiceR1   <= IDEX_indiceR1;
+      IDEX_indiceR2   <= IDEX_indiceR2;
+      IDEX_shamt      <= IDEX_shamt;
+      IDEX_funct3     <= IDEX_funct3;
+      IDEX_funct7     <= IDEX_funct7;
+      IDEX_imm        <= IDEX_imm;
+      IDEX_PC4        <= IDEX_PC4;
+    end else begin
       IDEX_instr        <= IFID_instr;
       IDEX_PC           <= IFID_PC;
       IDEX_AluControl   <= AluControl;
@@ -395,6 +419,24 @@ module RISCV_Pipeline (
       EXMEM_Somatorio_PCeIMM <= 32'b0;
       EXMEM_PC4            <= 32'b0;
       EXMEM_AluOut         <= 32'b0;
+    end else if(stall_cache_dados) begin
+      EXMEM_instr          <= EXMEM_instr;
+      EXMEM_regwrite       <= EXMEM_regwrite;
+      EXMEM_MemRead        <= EXMEM_MemRead;
+      EXMEM_MemWrite       <= EXMEM_MemWrite;
+      EXMEM_MemToReg       <= EXMEM_MemToReg;
+      EXMEM_BranchVal      <= EXMEM_BranchVal;
+      EXMEM_BranchJal      <= EXMEM_BranchJal;
+      EXMEM_BranchJalr     <= EXMEM_BranchJalr;
+      EXMEM_BranchBxx      <= EXMEM_BranchBxx;
+      EXMEM_BranchOnSign   <= EXMEM_BranchOnSign;
+      EXMEM_flagZero       <= EXMEM_flagZero;
+      EXMEM_flagNegative   <= EXMEM_flagNegative;
+      EXMEM_WriteData      <= EXMEM_WriteData;
+      EXMEM_rd             <= EXMEM_rd;
+      EXMEM_Somatorio_PCeIMM <= EXMEM_Somatorio_PCeIMM;
+      EXMEM_PC4            <= EXMEM_PC4;
+      EXMEM_AluOut         <= EXMEM_AluOut;
     end else begin
       EXMEM_instr      <= IDEX_instr;
       EXMEM_regwrite   <= IDEX_RegWrite;
@@ -436,32 +478,29 @@ module RISCV_Pipeline (
   //====================
   // Cache de Dados (direta, 4 linhas) Leitura Combinacional e Escrita Sequencial
   //====================
-    reg [31:0] data_cache_data [0:3];  // Dados da cache (16 bits)
-    reg [27:0] data_cache_tag  [0:3];  // Tags da cache
-    reg        data_cache_valid[0:3];  // Bits de validade da cache
+  wire [31:0] dado_lido_da_cache;
 
-    wire [1:0]  data_cache_index = EXMEM_AluOut[3:2];   // Indexa 4 linhas
-    wire [27:0] data_cache_tag_addr = EXMEM_AluOut[31:4]; // Tag
+  cache_dados u_cacheDados (
+    .clock(clock),
+    .reset(reset),
+    .MemRead(EXMEM_MemRead), // Controlado pelo estágio EX/MEM
+    .endereco(EXMEM_AluOut), // Endereço calculado pela ULA
+    .dado_lido(dado_lido_da_cache), // Saída para o pipeline
+    .stall_cache_dados(stall_cache_dados) // Saída de stall para o controle
+  );
 
-  assign cache_data_hit = data_cache_valid[data_cache_index] && (data_cache_tag[data_cache_index] == data_cache_tag_addr);
-  wire [31:0] dado_lido_da_memoria_principal = memoria_dados[EXMEM_AluOut >> 2];
-  wire [31:0] dado_lido = (cache_data_hit) ? data_cache_data[data_cache_index] : dado_lido_da_memoria_principal;
+  wire [31:0] dado_lido = dado_lido_da_cache;
   //====================
   // Estagio MEM/WB
   //====================
      always @(posedge clock or posedge reset) begin
-    if (reset) begin
+    if (reset || stall_cache_dados) begin
       MEMWB_instr    <= 32'b0;
       MEMWB_regwrite <= 1'b0;
       MEMWB_Data     <= 32'b0;
       MEMWB_DadoMUX  <= 32'b0;
       MEMWB_rd       <= 5'b0;
       MEMWB_MemToReg <= 1'b0;
-      for (i = 0; i < 4; i = i + 1) begin
-        data_cache_valid[i] <= 0;
-        data_cache_tag[i]   <= 0;
-        data_cache_data[i]  <= 0;
-      end
     end else begin
       MEMWB_instr      <= EXMEM_instr;
       MEMWB_regwrite   <= EXMEM_regwrite;
@@ -469,22 +508,6 @@ module RISCV_Pipeline (
       MEMWB_Dado_Lido  <= dado_lido;
       MEMWB_rd         <= EXMEM_rd;
       MEMWB_MemToReg   <= EXMEM_MemToReg;
-
-      if (EXMEM_MemWrite) begin
-        memoria_dados[EXMEM_AluOut >> 2] <= EXMEM_WriteData;
-        // Política de escrita: Invalida a linha da cache se o endereço bater.
-        // Isso é uma estratégia simples (write-through com no-write-allocate e invalidação).
-        if (cache_data_hit) begin
-            data_cache_valid[data_cache_index] <= 1'b0;
-        end
-      end
-      // Ação 2: Se a instrução for um LW (Load Word) e deu CACHE MISS
-      // Política de alocação: Escreve o dado buscado da memória na cache.
-      else if (EXMEM_MemRead && !cache_data_hit) begin
-        data_cache_valid[data_cache_index] <= 1'b1;
-        data_cache_tag[data_cache_index]   <= data_cache_tag_addr;
-        data_cache_data[data_cache_index]  <= dado_lido_da_memoria_principal;
-      end
     end
   end
 

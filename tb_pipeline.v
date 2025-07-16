@@ -4,11 +4,17 @@ module tb_pipeline;
 
   reg clock;
   reg reset;
+  wire [31:0] result_out;
+  wire [4:0]  reg_addr_out;
+  wire write_enable_out;
   integer    i;
   // Instância do módulo principal
   RISCV_Pipeline uut (
     .clock(clock),
-    .reset(reset)
+    .reset(reset),
+    .result_out(result_out),
+    .reg_addr_out(reg_addr_out),
+    .write_enable_out(write_enable_out)
   );
 
   reg [31:0] block_base_addr;
@@ -643,7 +649,7 @@ end
   // 4) Espera o mergesort rodar e imprime o resultado
   initial begin
     wait (reset == 0);
-    #110000;  // tempo suficiente para ordenar
+    #120000;  // tempo suficiente para ordenar
 
     $display("\n--- Vetor ordenado em memoria_dados ---");
     for (i = 0; i < 50; i = i + 1)

@@ -1,6 +1,10 @@
 module RISCV_Pipeline (
     input wire clock,
-    input wire reset
+    input wire reset,
+
+    output wire [31:0] result_out,
+    output wire [4:0]  reg_addr_out,
+    output wire        write_enable_out
 );
 
   integer i;
@@ -73,7 +77,6 @@ module RISCV_Pipeline (
   always @(posedge clock or posedge reset) begin
     if (reset) begin
       PC <= 0;
-      for (i = 0; i < 32; i = i + 1) banco_regs[i] <= 0;
     end else begin
       PC <= (BranchOutCome) ? branch_target           : 
             (stall || stall_cache_instrucoes || stall_cache_dados)  ?  PC  :
@@ -100,20 +103,27 @@ module RISCV_Pipeline (
   // Estagio IF/ID
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (stall || stall_cache_dados) begin
-      IFID_instr    <= IFID_instr;
-      IFID_PC       <= IFID_PC;
-      IFID_PC4      <= IFID_PC4;
-    end else if (reset || BranchOutCome || stall_cache_instrucoes) begin
+    if(reset)begin
       IFID_instr <= 0;
       IFID_PC    <= 0;
       IFID_PC4   <= 0;
-    end
-    else begin
-      IFID_instr    <= instrucao_do_processador;
-      IFID_PC       <= PC;
-      IFID_PC4      <= PC + 4;
+    end else begin
+      if (stall || stall_cache_dados) begin
+        IFID_instr    <= IFID_instr;
+        IFID_PC       <= IFID_PC;
+        IFID_PC4      <= IFID_PC4;
       end
+      else if (BranchOutCome || stall_cache_instrucoes) begin
+        IFID_instr <= 0;
+        IFID_PC    <= 0;
+        IFID_PC4   <= 0;
+      end else begin
+        IFID_instr    <= instrucao_do_processador;
+        IFID_PC       <= PC;
+        IFID_PC4      <= PC + 4;
+      end
+    end
+    
   end
 
   //Sinais
@@ -256,7 +266,7 @@ module RISCV_Pipeline (
   // Estagio ID/EX
   //=======================
   always @(posedge clock or posedge reset) begin
-    if (reset || BranchOutCome || stall) begin
+    if(reset)begin
       IDEX_instr        <= 32'b0;
       IDEX_PC           <= 32'b0;
       IDEX_AluControl   <= 4'b0;
@@ -281,56 +291,83 @@ module RISCV_Pipeline (
       IDEX_funct7       <= 7'b0;
       IDEX_imm          <= 32'b0;
       IDEX_PC4          <= 32'b0;
-    end else if(stall_cache_dados) begin
-      IDEX_instr      <= IDEX_instr;
-      IDEX_PC         <= IDEX_PC;
-      IDEX_AluControl <= IDEX_AluControl;
-      IDEX_AluSrcA    <= IDEX_AluSrcA;
-      IDEX_AluSrcB    <= IDEX_AluSrcB;
-      IDEX_BranchVal  <= IDEX_BranchVal;
-      IDEX_BranchJal  <= IDEX_BranchJal;
-      IDEX_BranchJalr <= IDEX_BranchJalr;
-      IDEX_BranchBxx  <= IDEX_BranchBxx;
-      IDEX_BranchOnSign <= IDEX_BranchOnSign;
-      IDEX_RegWrite   <= IDEX_RegWrite;
-      IDEX_MemRead    <= IDEX_MemRead;
-      IDEX_MemWrite   <= IDEX_MemWrite;
-      IDEX_MemToReg   <= IDEX_MemToReg;
-      IDEX_r1         <= IDEX_r1;
-      IDEX_r2         <= IDEX_r2;
-      IDEX_rd         <= IDEX_rd;
-      IDEX_indiceR1   <= IDEX_indiceR1;
-      IDEX_indiceR2   <= IDEX_indiceR2;
-      IDEX_shamt      <= IDEX_shamt;
-      IDEX_funct3     <= IDEX_funct3;
-      IDEX_funct7     <= IDEX_funct7;
-      IDEX_imm        <= IDEX_imm;
-      IDEX_PC4        <= IDEX_PC4;
     end else begin
-      IDEX_instr        <= IFID_instr;
-      IDEX_PC           <= IFID_PC;
-      IDEX_AluControl   <= AluControl;
-      IDEX_AluSrcA      <= AluSrcA;
-      IDEX_AluSrcB      <= AluSrcB;
-      IDEX_BranchVal    <= BranchVal;
-      IDEX_BranchJal    <= BranchJal;
-      IDEX_BranchJalr   <= BranchJalr;
-      IDEX_BranchBxx    <= BranchBxx;
-      IDEX_BranchOnSign <= BranchOnSign;
-      IDEX_RegWrite     <= RegWrite;
-      IDEX_MemRead      <= MemRead;
-      IDEX_MemWrite     <= MemWrite;
-      IDEX_MemToReg     <= MemToReg;
-      IDEX_r1           <= banco_regs[IFID_instr[19:15]];
-      IDEX_r2           <= banco_regs[IFID_instr[24:20]];
-      IDEX_rd           <= IFID_instr[11:7];
-      IDEX_indiceR1     <= IFID_instr[19:15];
-      IDEX_indiceR2     <= IFID_instr[24:20];
-      IDEX_shamt        <= IFID_instr[24:20];
-      IDEX_funct3       <= IFID_instr[14:12];
-      IDEX_funct7       <= IFID_instr[31:25];
-      IDEX_imm          <= Imediato;
-      IDEX_PC4          <= IFID_PC4;
+      if (BranchOutCome || stall) begin
+        IDEX_instr        <= 32'b0;
+        IDEX_PC           <= 32'b0;
+        IDEX_AluControl   <= 4'b0;
+        IDEX_AluSrcA      <= 1'b0;
+        IDEX_AluSrcB      <= 1'b0;
+        IDEX_BranchVal    <= 1'b0;
+        IDEX_BranchJal    <= 1'b0;
+        IDEX_BranchJalr   <= 1'b0;
+        IDEX_BranchBxx    <= 1'b0;
+        IDEX_BranchOnSign <= 1'b0;
+        IDEX_RegWrite     <= 1'b0;
+        IDEX_MemRead      <= 1'b0;
+        IDEX_MemWrite     <= 1'b0;
+        IDEX_MemToReg     <= 1'b0;
+        IDEX_r1           <= 32'b0;
+        IDEX_r2           <= 32'b0;
+        IDEX_rd           <= 5'b0;
+        IDEX_indiceR1     <= 5'b0;
+        IDEX_indiceR2     <= 5'b0;
+        IDEX_shamt        <= 5'b0;
+        IDEX_funct3       <= 3'b0;
+        IDEX_funct7       <= 7'b0;
+        IDEX_imm          <= 32'b0;
+        IDEX_PC4          <= 32'b0;
+      end else if(stall_cache_dados) begin
+        IDEX_instr      <= IDEX_instr;
+        IDEX_PC         <= IDEX_PC;
+        IDEX_AluControl <= IDEX_AluControl;
+        IDEX_AluSrcA    <= IDEX_AluSrcA;
+        IDEX_AluSrcB    <= IDEX_AluSrcB;
+        IDEX_BranchVal  <= IDEX_BranchVal;
+        IDEX_BranchJal  <= IDEX_BranchJal;
+        IDEX_BranchJalr <= IDEX_BranchJalr;
+        IDEX_BranchBxx  <= IDEX_BranchBxx;
+        IDEX_BranchOnSign <= IDEX_BranchOnSign;
+        IDEX_RegWrite   <= IDEX_RegWrite;
+        IDEX_MemRead    <= IDEX_MemRead;
+        IDEX_MemWrite   <= IDEX_MemWrite;
+        IDEX_MemToReg   <= IDEX_MemToReg;
+        IDEX_r1         <= IDEX_r1;
+        IDEX_r2         <= IDEX_r2;
+        IDEX_rd         <= IDEX_rd;
+        IDEX_indiceR1   <= IDEX_indiceR1;
+        IDEX_indiceR2   <= IDEX_indiceR2;
+        IDEX_shamt      <= IDEX_shamt;
+        IDEX_funct3     <= IDEX_funct3;
+        IDEX_funct7     <= IDEX_funct7;
+        IDEX_imm        <= IDEX_imm;
+        IDEX_PC4        <= IDEX_PC4;
+      end else begin
+        IDEX_instr        <= IFID_instr;
+        IDEX_PC           <= IFID_PC;
+        IDEX_AluControl   <= AluControl;
+        IDEX_AluSrcA      <= AluSrcA;
+        IDEX_AluSrcB      <= AluSrcB;
+        IDEX_BranchVal    <= BranchVal;
+        IDEX_BranchJal    <= BranchJal;
+        IDEX_BranchJalr   <= BranchJalr;
+        IDEX_BranchBxx    <= BranchBxx;
+        IDEX_BranchOnSign <= BranchOnSign;
+        IDEX_RegWrite     <= RegWrite;
+        IDEX_MemRead      <= MemRead;
+        IDEX_MemWrite     <= MemWrite;
+        IDEX_MemToReg     <= MemToReg;
+        IDEX_r1           <= banco_regs[IFID_instr[19:15]];
+        IDEX_r2           <= banco_regs[IFID_instr[24:20]];
+        IDEX_rd           <= IFID_instr[11:7];
+        IDEX_indiceR1     <= IFID_instr[19:15];
+        IDEX_indiceR2     <= IFID_instr[24:20];
+        IDEX_shamt        <= IFID_instr[24:20];
+        IDEX_funct3       <= IFID_instr[14:12];
+        IDEX_funct7       <= IFID_instr[31:25];
+        IDEX_imm          <= Imediato;
+        IDEX_PC4          <= IFID_PC4;
+      end
     end
   end
 
@@ -400,8 +437,7 @@ module RISCV_Pipeline (
   // Estagio EX/MEM
   //====================
    always @(posedge clock or posedge reset) begin
-    if (reset || BranchOutCome) begin
-    // Atribuições para limpar/anular a instruçao no estágio EX/MEM
+    if(reset)begin
       EXMEM_instr          <= 32'b0;
       EXMEM_regwrite       <= 1'b0;
       EXMEM_MemRead        <= 1'b0;
@@ -419,42 +455,63 @@ module RISCV_Pipeline (
       EXMEM_Somatorio_PCeIMM <= 32'b0;
       EXMEM_PC4            <= 32'b0;
       EXMEM_AluOut         <= 32'b0;
-    end else if(stall_cache_dados) begin
-      EXMEM_instr          <= EXMEM_instr;
-      EXMEM_regwrite       <= EXMEM_regwrite;
-      EXMEM_MemRead        <= EXMEM_MemRead;
-      EXMEM_MemWrite       <= EXMEM_MemWrite;
-      EXMEM_MemToReg       <= EXMEM_MemToReg;
-      EXMEM_BranchVal      <= EXMEM_BranchVal;
-      EXMEM_BranchJal      <= EXMEM_BranchJal;
-      EXMEM_BranchJalr     <= EXMEM_BranchJalr;
-      EXMEM_BranchBxx      <= EXMEM_BranchBxx;
-      EXMEM_BranchOnSign   <= EXMEM_BranchOnSign;
-      EXMEM_flagZero       <= EXMEM_flagZero;
-      EXMEM_flagNegative   <= EXMEM_flagNegative;
-      EXMEM_WriteData      <= EXMEM_WriteData;
-      EXMEM_rd             <= EXMEM_rd;
-      EXMEM_Somatorio_PCeIMM <= EXMEM_Somatorio_PCeIMM;
-      EXMEM_PC4            <= EXMEM_PC4;
-      EXMEM_AluOut         <= EXMEM_AluOut;
     end else begin
-      EXMEM_instr      <= IDEX_instr;
-      EXMEM_regwrite   <= IDEX_RegWrite;
-      EXMEM_MemRead    <= IDEX_MemRead;
-      EXMEM_MemWrite   <= IDEX_MemWrite;
-      EXMEM_MemToReg    <= IDEX_MemToReg;
-      EXMEM_BranchVal   <= IDEX_BranchVal;
-      EXMEM_BranchJal  <= IDEX_BranchJal;
-      EXMEM_BranchJalr <= IDEX_BranchJalr;
-      EXMEM_BranchBxx  <= IDEX_BranchBxx;
-      EXMEM_BranchOnSign <= IDEX_BranchOnSign;
-      EXMEM_flagZero   <= flag_zero;
-      EXMEM_flagNegative   <= flag_negative;
-      EXMEM_WriteData  <= alu_in2;
-      EXMEM_rd                <= IDEX_rd;
-      EXMEM_Somatorio_PCeIMM  <= Somatorio_PCeIMM;
-      EXMEM_PC4               <= IDEX_PC4;
-      EXMEM_AluOut            <= alu_result;
+      if (BranchOutCome) begin
+      // Atribuições para limpar/anular a instruçao no estágio EX/MEM
+        EXMEM_instr          <= 32'b0;
+        EXMEM_regwrite       <= 1'b0;
+        EXMEM_MemRead        <= 1'b0;
+        EXMEM_MemWrite       <= 1'b0;
+        EXMEM_MemToReg       <= 1'b0;
+        EXMEM_BranchVal      <= 1'b0;
+        EXMEM_BranchJal      <= 1'b0;
+        EXMEM_BranchJalr     <= 1'b0;
+        EXMEM_BranchBxx      <= 1'b0;
+        EXMEM_BranchOnSign   <= 1'b0;
+        EXMEM_flagZero       <= 1'b0;
+        EXMEM_flagNegative   <= 1'b0;
+        EXMEM_WriteData      <= 32'b0;
+        EXMEM_rd             <= 5'b0;
+        EXMEM_Somatorio_PCeIMM <= 32'b0;
+        EXMEM_PC4            <= 32'b0;
+        EXMEM_AluOut         <= 32'b0;
+      end else if(stall_cache_dados) begin
+        EXMEM_instr          <= EXMEM_instr;
+        EXMEM_regwrite       <= EXMEM_regwrite;
+        EXMEM_MemRead        <= EXMEM_MemRead;
+        EXMEM_MemWrite       <= EXMEM_MemWrite;
+        EXMEM_MemToReg       <= EXMEM_MemToReg;
+        EXMEM_BranchVal      <= EXMEM_BranchVal;
+        EXMEM_BranchJal      <= EXMEM_BranchJal;
+        EXMEM_BranchJalr     <= EXMEM_BranchJalr;
+        EXMEM_BranchBxx      <= EXMEM_BranchBxx;
+        EXMEM_BranchOnSign   <= EXMEM_BranchOnSign;
+        EXMEM_flagZero       <= EXMEM_flagZero;
+        EXMEM_flagNegative   <= EXMEM_flagNegative;
+        EXMEM_WriteData      <= EXMEM_WriteData;
+        EXMEM_rd             <= EXMEM_rd;
+        EXMEM_Somatorio_PCeIMM <= EXMEM_Somatorio_PCeIMM;
+        EXMEM_PC4            <= EXMEM_PC4;
+        EXMEM_AluOut         <= EXMEM_AluOut;
+      end else begin
+        EXMEM_instr      <= IDEX_instr;
+        EXMEM_regwrite   <= IDEX_RegWrite;
+        EXMEM_MemRead    <= IDEX_MemRead;
+        EXMEM_MemWrite   <= IDEX_MemWrite;
+        EXMEM_MemToReg    <= IDEX_MemToReg;
+        EXMEM_BranchVal   <= IDEX_BranchVal;
+        EXMEM_BranchJal  <= IDEX_BranchJal;
+        EXMEM_BranchJalr <= IDEX_BranchJalr;
+        EXMEM_BranchBxx  <= IDEX_BranchBxx;
+        EXMEM_BranchOnSign <= IDEX_BranchOnSign;
+        EXMEM_flagZero   <= flag_zero;
+        EXMEM_flagNegative   <= flag_negative;
+        EXMEM_WriteData  <= alu_in2;
+        EXMEM_rd                <= IDEX_rd;
+        EXMEM_Somatorio_PCeIMM  <= Somatorio_PCeIMM;
+        EXMEM_PC4               <= IDEX_PC4;
+        EXMEM_AluOut            <= alu_result;
+      end
     end
   end
 
@@ -493,8 +550,8 @@ module RISCV_Pipeline (
   //====================
   // Estagio MEM/WB
   //====================
-     always @(posedge clock or posedge reset) begin
-    if (reset || stall_cache_dados) begin
+  always @(posedge clock or posedge reset) begin
+    if(reset) begin
       MEMWB_instr    <= 32'b0;
       MEMWB_regwrite <= 1'b0;
       MEMWB_Data     <= 32'b0;
@@ -502,12 +559,21 @@ module RISCV_Pipeline (
       MEMWB_rd       <= 5'b0;
       MEMWB_MemToReg <= 1'b0;
     end else begin
-      MEMWB_instr      <= EXMEM_instr;
-      MEMWB_regwrite   <= EXMEM_regwrite;
-      MEMWB_Dado       <= Dado_MUX;
-      MEMWB_Dado_Lido  <= dado_lido;
-      MEMWB_rd         <= EXMEM_rd;
-      MEMWB_MemToReg   <= EXMEM_MemToReg;
+      if (stall_cache_dados) begin
+        MEMWB_instr    <= 32'b0;
+        MEMWB_regwrite <= 1'b0;
+        MEMWB_Data     <= 32'b0;
+        MEMWB_DadoMUX  <= 32'b0;
+        MEMWB_rd       <= 5'b0;
+        MEMWB_MemToReg <= 1'b0;
+      end else begin
+        MEMWB_instr      <= EXMEM_instr;
+        MEMWB_regwrite   <= EXMEM_regwrite;
+        MEMWB_Dado       <= Dado_MUX;
+        MEMWB_Dado_Lido  <= dado_lido;
+        MEMWB_rd         <= EXMEM_rd;
+        MEMWB_MemToReg   <= EXMEM_MemToReg;
+      end
     end
   end
 
@@ -518,9 +584,17 @@ module RISCV_Pipeline (
   // Write Back
   //====================
   always @(*) begin
+    if(reset) for (i = 0; i < 32; i = i + 1) banco_regs[i] <= 0;
+    else begin
       if (MEMWB_regwrite && MEMWB_rd != 0) begin
-        banco_regs[MEMWB_rd] = RegWriteData;
+        banco_regs[MEMWB_rd] <= RegWriteData;
       end
+    end
   end
+
+
+assign result_out       = RegWriteData;
+assign reg_addr_out     = MEMWB_rd;
+assign write_enable_out = MEMWB_regwrite;
 
 endmodule

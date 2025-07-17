@@ -13,7 +13,6 @@ module RISCV_Pipeline (
   // Memórias e banco de registradores
   //===============================
   reg [31:0] memoria_instrucoes [0:1023];
-  reg signed [31:0] memoria_dados [0:1023];
   reg signed [31:0] banco_regs [0:31];   // 32 registradores
 
 //======================

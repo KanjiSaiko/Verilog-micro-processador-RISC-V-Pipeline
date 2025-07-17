@@ -4,8 +4,11 @@ module tb_pipeline;
 
   reg clock;
   reg reset;
+  reg signed [31:0] memoria_dados [0:1023];
+
   wire [31:0] result_out;
   wire [4:0]  reg_addr_out;
+  
   wire write_enable_out;
   integer    i;
   // Instância do módulo principal
@@ -27,7 +30,7 @@ module tb_pipeline;
   reg [4:0]  dado_cache_index;
   reg [22:0] dado_cache_tag;
   reg [31:0] dado_da_memoria;
-  reg [4:0]  dado_cache_index_escrita;
+  reg[4:0] dado_cache_index_escrita;
 
   //––––––––––––––––––––––––––––––––––––––––––––––––––––––
   // 1) Geracao de clock
@@ -41,7 +44,7 @@ module tb_pipeline;
   initial begin
     reset = 1;
     for(i=0;i<1023;i=i+1)begin
-      uut.memoria_dados[i] <= 0;
+      memoria_dados[i] <= 0;
       uut.memoria_instrucoes[i] <= 0;
     end     
     #20;       // mantém reset alto por 20 ns
@@ -56,56 +59,56 @@ module tb_pipeline;
      // Mergesort para 4 elementos, SEM saltos para trás (offsets negativos).
      //  uut.banco_regs[2] = 255 * 4; // Aponta para o endereço logo após o fim da memória
       // carrega os 4 valores que você quer ordenar:
-      uut.memoria_dados[0] = 32'd167;
-      uut.memoria_dados[1] = 32'd165;
-      uut.memoria_dados[2] = 32'd186;
-      uut.memoria_dados[3] = 32'd172;
-      uut.memoria_dados[4] = 32'd94;
-      uut.memoria_dados[5] = 32'd27;
-      uut.memoria_dados[6] = 32'd60;
-      uut.memoria_dados[7] = 32'd35;
-      uut.memoria_dados[8] = 32'd13;
-      uut.memoria_dados[9] = 32'd15;
-      uut.memoria_dados[10] = 32'd79;
-      uut.memoria_dados[11] = 32'd170;
-      uut.memoria_dados[12] = 32'd106;
-      uut.memoria_dados[13] = 32'd59;
-      uut.memoria_dados[14] = 32'd190;
-      uut.memoria_dados[15] = 32'd136;
-      uut.memoria_dados[16] = 32'd196;
-      uut.memoria_dados[17] = 32'd159;
-      uut.memoria_dados[18] = 32'd59;
-      uut.memoria_dados[19] = 32'd137;
-      uut.memoria_dados[20] = 32'd49;
-      uut.memoria_dados[21] = 32'd142;
-      uut.memoria_dados[22] = 32'd86;
-      uut.memoria_dados[23] = 32'd123;
-      uut.memoria_dados[24] = 32'd102;
-      uut.memoria_dados[25] = 32'd11;
-      uut.memoria_dados[26] = 32'd8;
-      uut.memoria_dados[27] = 32'd25;
-      uut.memoria_dados[28] = 32'd71;
-      uut.memoria_dados[29] = 32'd199;
-      uut.memoria_dados[30] = 32'd40;
-      uut.memoria_dados[31] = 32'd146;
-      uut.memoria_dados[32] = 32'd138;
-      uut.memoria_dados[33] = 32'd195;
-      uut.memoria_dados[34] = 32'd19;
-      uut.memoria_dados[35] = 32'd14;
-      uut.memoria_dados[36] = 32'd170;
-      uut.memoria_dados[37] = 32'd138;
-      uut.memoria_dados[38] = 32'd88;
-      uut.memoria_dados[39] = 32'd15;
-      uut.memoria_dados[40] = 32'd104;
-      uut.memoria_dados[41] = 32'd52;
-      uut.memoria_dados[42] = 32'd156;
-      uut.memoria_dados[43] = 32'd105;
-      uut.memoria_dados[44] = 32'd54;
-      uut.memoria_dados[45] = 32'd99;
-      uut.memoria_dados[46] = 32'd65;
-      uut.memoria_dados[47] = 32'd151;
-      uut.memoria_dados[48] = 32'd6;
-      uut.memoria_dados[49] = 32'd73;
+      memoria_dados[0] = 32'd167;
+      memoria_dados[1] = 32'd165;
+      memoria_dados[2] = 32'd186;
+      memoria_dados[3] = 32'd172;
+      memoria_dados[4] = 32'd94;
+      memoria_dados[5] = 32'd27;
+      memoria_dados[6] = 32'd60;
+      memoria_dados[7] = 32'd35;
+      memoria_dados[8] = 32'd13;
+      memoria_dados[9] = 32'd15;
+      memoria_dados[10] = 32'd79;
+      memoria_dados[11] = 32'd170;
+      memoria_dados[12] = 32'd106;
+      memoria_dados[13] = 32'd59;
+      memoria_dados[14] = 32'd190;
+      memoria_dados[15] = 32'd136;
+      memoria_dados[16] = 32'd196;
+      memoria_dados[17] = 32'd159;
+      memoria_dados[18] = 32'd59;
+      memoria_dados[19] = 32'd137;
+      memoria_dados[20] = 32'd49;
+      memoria_dados[21] = 32'd142;
+      memoria_dados[22] = 32'd86;
+      memoria_dados[23] = 32'd123;
+      memoria_dados[24] = 32'd102;
+      memoria_dados[25] = 32'd11;
+      memoria_dados[26] = 32'd8;
+      memoria_dados[27] = 32'd25;
+      memoria_dados[28] = 32'd71;
+      memoria_dados[29] = 32'd199;
+      memoria_dados[30] = 32'd40;
+      memoria_dados[31] = 32'd146;
+      memoria_dados[32] = 32'd138;
+      memoria_dados[33] = 32'd195;
+      memoria_dados[34] = 32'd19;
+      memoria_dados[35] = 32'd14;
+      memoria_dados[36] = 32'd170;
+      memoria_dados[37] = 32'd138;
+      memoria_dados[38] = 32'd88;
+      memoria_dados[39] = 32'd15;
+      memoria_dados[40] = 32'd104;
+      memoria_dados[41] = 32'd52;
+      memoria_dados[42] = 32'd156;
+      memoria_dados[43] = 32'd105;
+      memoria_dados[44] = 32'd54;
+      memoria_dados[45] = 32'd99;
+      memoria_dados[46] = 32'd65;
+      memoria_dados[47] = 32'd151;
+      memoria_dados[48] = 32'd6;
+      memoria_dados[49] = 32'd73;
       // Algoritmo Mergesort para 4 elementos
       // Formato: uut.memoria_instrucoes[index] = 32'b...;
       // --- Código de Máquina ---
@@ -234,8 +237,8 @@ module tb_pipeline;
         index2 = (block_base_addr + 8) >> 2;
         index3 = (block_base_addr + 12) >> 2;
 
-        bloco_de_dados = {uut.memoria_dados[index3], uut.memoria_dados[index2],
-                          uut.memoria_dados[index1], uut.memoria_dados[index0]};
+        bloco_de_dados = {memoria_dados[index3], memoria_dados[index2],
+                          memoria_dados[index1], memoria_dados[index0]};
 
         endereco_miss    = uut.EXMEM_AluOut;
         dado_cache_index = endereco_miss[8:4];
@@ -286,8 +289,8 @@ module tb_pipeline;
         index3 = (block_base_addr + 12) >> 2;
         
         // Lê o dado da memória
-        bloco_de_dados = {uut.memoria_dados[index3], uut.memoria_dados[index2], 
-                          uut.memoria_dados[index1], uut.memoria_dados[index0]};
+        bloco_de_dados = {memoria_dados[index3], memoria_dados[index2], 
+                          memoria_dados[index1], memoria_dados[index0]};
 
         endereco_miss = uut.EXMEM_AluOut;
         // O índice e a tag agora são calculados
@@ -312,7 +315,7 @@ module tb_pipeline;
     if (!reset && uut.EXMEM_MemWrite) begin
       // SW não para o pipeline, mas o testbench precisa atualizar sua memória
       $display("Store Word detectado. Escrevendo %0d no endereço %0d da memória.", uut.EXMEM_WriteData, uut.EXMEM_AluOut);
-      uut.memoria_dados[uut.EXMEM_AluOut >> 2] = uut.EXMEM_WriteData;
+      memoria_dados[uut.EXMEM_AluOut >> 2] = uut.EXMEM_WriteData;
 
       // Política de escrita: Invalida a linha correspondente na cache de dados, se houver
       // Isso evita que o processador leia um dado velho da cache após uma escrita
@@ -425,7 +428,7 @@ initial begin
           $display("Instrucao ID  %b  -  SW x%0d, %0d(x%0d)", uut.IDEX_instr, uut.IDEX_indiceR2, uut.IDEX_imm, uut.IDEX_indiceR1);
         end
         7'b0000011: begin
-          $display("Instrucao ID  %b  -  LW x%0d, %0d(x%0d) (Endereco[%0d]: %0d)", uut.IDEX_instr, uut.IDEX_rd, uut.IDEX_imm, uut.IDEX_indiceR1, uut.alu_result>>2, uut.memoria_dados[uut.EXMEM_AluOut>>2]);
+          $display("Instrucao ID  %b  -  LW x%0d, %0d(x%0d) (Endereco[%0d]: %0d)", uut.IDEX_instr, uut.IDEX_rd, uut.IDEX_imm, uut.IDEX_indiceR1, uut.alu_result>>2, memoria_dados[uut.EXMEM_AluOut>>2]);
         end
         7'b0010011: begin
           case(uut.IDEX_funct3)
@@ -474,7 +477,7 @@ initial begin
           $display("Instrucao EX  %b  -  SW x%0d, %0d(x%0d)", uut.EXMEM_instr, uut.EXMEM_instr[24:20], EXMEM_imm, uut.EXMEM_instr[19:15]);
         end
         7'b0000011: begin
-          $display("Instrucao EX  %b  -  LW x%0d, %0d(x%0d) (Memoria[%0d]=%0d)", uut.EXMEM_instr, uut.EXMEM_rd, EXMEM_imm, uut.EXMEM_instr[19:15], uut.EXMEM_AluOut>>2, uut.memoria_dados[uut.EXMEM_AluOut>>2]);
+          $display("Instrucao EX  %b  -  LW x%0d, %0d(x%0d) (Memoria[%0d]=%0d)", uut.EXMEM_instr, uut.EXMEM_rd, EXMEM_imm, uut.EXMEM_instr[19:15], uut.EXMEM_AluOut>>2, memoria_dados[uut.EXMEM_AluOut>>2]);
         end
         7'b0010011: begin
           case(uut.EXMEM_instr[14:12])
@@ -613,12 +616,12 @@ initial begin
       $display("Reg[20]: %0d  || Reg[21]: %0d  || Reg[22]: %0d  || Reg[23]: %0d", uut.banco_regs[20], uut.banco_regs[21], uut.banco_regs[22], uut.banco_regs[23]);
       $display("Reg[24]: %0d  || Reg[25]: %0d  || Reg[26]: %0d  || Reg[27]: %0d", uut.banco_regs[24], uut.banco_regs[25], uut.banco_regs[26], uut.banco_regs[27]);
       $display("Reg[28]: %0d  || Reg[29]: %0d  || Reg[30]: %0d  || Reg[31]: %0d\n", uut.banco_regs[28], uut.banco_regs[29], uut.banco_regs[30], uut.banco_regs[31]);
-      $display("memoria_dados[0] = %0d   || memoria_dados[1] = %0d    || memoria_dados[2]  = %0d    || memoria_dados[3] = %0d", uut.memoria_dados[0], uut.memoria_dados[1], uut.memoria_dados[2], uut.memoria_dados[3]);
-      $display("memoria_dados[4] = %0d     || memoria_dados[5] = %0d    || memoria_dados[6]  = %0d    || memoria_dados[7] = %0d", uut.memoria_dados[4], uut.memoria_dados[5], uut.memoria_dados[6], uut.memoria_dados[7]);
-      $display("memoria_dados[8] = %0d     || memoria_dados[9] = %0d    || memoria_dados[10]  = %0d   || memoria_dados[11] = %0d", uut.memoria_dados[8], uut.memoria_dados[9], uut.memoria_dados[10], uut.memoria_dados[11]);
-      $display("memoria_dados[12] = %0d    || memoria_dados[13] = %0d   || memoria_dados[14]  = %0d   || memoria_dados[15] = %0d", uut.memoria_dados[12], uut.memoria_dados[13], uut.memoria_dados[14], uut.memoria_dados[15]);
-      $display("memoria_dados[16] = %0d     || memoria_dados[17] = %0d    || memoria_dados[18]  = %0d   || memoria_dados[19] = %0d", uut.memoria_dados[16], uut.memoria_dados[17], uut.memoria_dados[18], uut.memoria_dados[19]);
-      $display("memoria_dados[20] = %0d    || memoria_dados[21] = %0d   || memoria_dados[22]  = %0d   || memoria_dados[23] = %0d", uut.memoria_dados[20], uut.memoria_dados[21], uut.memoria_dados[22], uut.memoria_dados[23]);
+      $display("memoria_dados[0] = %0d   || memoria_dados[1] = %0d    || memoria_dados[2]  = %0d    || memoria_dados[3] = %0d", memoria_dados[0], memoria_dados[1], memoria_dados[2], memoria_dados[3]);
+      $display("memoria_dados[4] = %0d     || memoria_dados[5] = %0d    || memoria_dados[6]  = %0d    || memoria_dados[7] = %0d", memoria_dados[4], memoria_dados[5], memoria_dados[6], memoria_dados[7]);
+      $display("memoria_dados[8] = %0d     || memoria_dados[9] = %0d    || memoria_dados[10]  = %0d   || memoria_dados[11] = %0d", memoria_dados[8], memoria_dados[9], memoria_dados[10], memoria_dados[11]);
+      $display("memoria_dados[12] = %0d    || memoria_dados[13] = %0d   || memoria_dados[14]  = %0d   || memoria_dados[15] = %0d", memoria_dados[12], memoria_dados[13], memoria_dados[14], memoria_dados[15]);
+      $display("memoria_dados[16] = %0d     || memoria_dados[17] = %0d    || memoria_dados[18]  = %0d   || memoria_dados[19] = %0d", memoria_dados[16], memoria_dados[17], memoria_dados[18], memoria_dados[19]);
+      $display("memoria_dados[20] = %0d    || memoria_dados[21] = %0d   || memoria_dados[22]  = %0d   || memoria_dados[23] = %0d", memoria_dados[20], memoria_dados[21], memoria_dados[22], memoria_dados[23]);
       $display("--------------------------------------------------------------------------------");
       if (uut.stall_cache_instrucoes)
         $display("MISS NA CACHE DE INSTRUCAO -> STALL");
@@ -653,7 +656,7 @@ end
 
     $display("\n--- Vetor ordenado em memoria_dados ---");
     for (i = 0; i < 50; i = i + 1)
-      $display("memoria_dados[%0d] = %0d", i, uut.memoria_dados[i]);
+      $display("memoria_dados[%0d] = %0d", i, memoria_dados[i]);
 
     $finish;
   end

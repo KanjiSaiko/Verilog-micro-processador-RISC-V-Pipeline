@@ -32,6 +32,10 @@ module tb_pipeline;
   reg [31:0] dado_da_memoria;
   reg[4:0] dado_cache_index_escrita;
 
+  reg [127:0] bloco_antigo;
+  reg [127:0] bloco_novo;
+  reg [1:0]  seletor_de_palavra;
+
   //––––––––––––––––––––––––––––––––––––––––––––––––––––––
   // 1) Geracao de clock
   initial begin
@@ -322,8 +326,23 @@ module tb_pipeline;
       // Isso evita que o processador leia um dado velho da cache apos uma escrita
       dado_cache_index_escrita = uut.EXMEM_AluOut[7:4];
 
-      // Apenas invalida se o endereco bater
+      // Se for HIT
       if (uut.u_cacheDados.data_cache_valid[dado_cache_index_escrita] && uut.u_cacheDados.data_cache_tag[dado_cache_index_escrita] == uut.EXMEM_AluOut[31:8]) begin
+        $display("Write-Through HIT. Atualizando a linha %d da cache de dados.", dado_cache_index_escrita);
+            seletor_de_palavra = uut.EXMEM_AluOut[3:2];
+            // 1. Le o bloco de 128 bits que já está na cache
+            bloco_antigo = uut.u_cacheDados.data_cache_data[dado_cache_index_escrita];
+            // 2. MODIFICA apenas a palavra de 32 bits correta dentro do bloco
+            case (seletor_de_palavra)
+                2'b00:  bloco_novo = {bloco_antigo[127:32], uut.EXMEM_WriteData};
+                2'b01:  bloco_novo = {bloco_antigo[127:64], uut.EXMEM_WriteData, bloco_antigo[31:0]};
+                2'b10:  bloco_novo = {bloco_antigo[127:96], uut.EXMEM_WriteData, bloco_antigo[63:0]};
+                2'b11:  bloco_novo = {uut.EXMEM_WriteData, bloco_antigo[95:0]};
+                default: bloco_novo = bloco_antigo;
+            endcase
+            // 3. ESCREVE o bloco de 128 bits modificado de volta para a cache
+            uut.u_cacheDados.data_cache_data[dado_cache_index_escrita] = bloco_novo;
+            
             uut.u_cacheDados.data_cache_valid[dado_cache_index_escrita] = 1'b0;
             $display("Linha %d da cache de dados invalidada devido a escrita.", dado_cache_index_escrita);
       end

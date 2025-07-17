@@ -8,7 +8,7 @@ module cache_instrucoes (
 );
     integer i;
     reg [127:0] instr_cache_data [0:31]; // (32 linhas de 128 bits (4 instrucoes))
-    reg [22:0] instr_cache_tag  [0:31];  // Tags da cache (enderea§os sem offset)
+    reg [22:0] instr_cache_tag  [0:31];  // Tags da cache (enderecados sem offset)
     reg        instr_cache_valid[0:31];  // Bits de validade da cache
 
     wire [4:0]  cache_index = PC[8:4]; 
@@ -26,12 +26,9 @@ module cache_instrucoes (
                                        (seletor_de_palavra == 2'b10) ? bloco_selecionado[95:64]  :
                                                                        bloco_selecionado[127:96])
                                       : 32'b0; // Se for miss, a saída não importa (pipeline parado)
-//===========================
-//Busca na Cache
-//=========================== 
+ // Invalida a cache
   always @(posedge clock or posedge reset) begin
     if (reset) begin
-        // Invalida a cache
       for (i = 0; i < 32; i = i + 1) begin
         instr_cache_valid[i] <= 0;
         instr_cache_tag[i]   <= 0;

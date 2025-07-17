@@ -34,10 +34,6 @@ module cache_dados (
                        (seletor_de_palavra == 2'b10) ? bloco_selecionado[95:64]  :
                                                        bloco_selecionado[127:96];
 
-
-    // Stall ocorre se for uma leitura (MemRead) e der miss na cache.
-
-
     // Lógica para invalidar a cache no reset
     always @(posedge clock or posedge reset) begin
         if (reset) begin

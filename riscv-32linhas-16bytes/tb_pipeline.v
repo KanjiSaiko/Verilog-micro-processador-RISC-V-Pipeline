@@ -11,7 +11,7 @@ module tb_pipeline;
   
   wire write_enable_out;
   integer    i;
-  // Instância do módulo principal
+  // Instância do modulo principal
   RISCV_Pipeline uut (
     .clock(clock),
     .reset(reset),
@@ -36,7 +36,7 @@ module tb_pipeline;
   // 1) Geracao de clock
   initial begin
     clock = 0;
-    forever #5 clock = ~clock;  // 10 ns de período
+    forever #5 clock = ~clock;  // 10 ns de periodo
   end
 
   //––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -57,7 +57,7 @@ module tb_pipeline;
       wait (reset == 0);
       // carrega os 4 valores que você quer ordenar:
      // Mergesort para 4 elementos, SEM saltos para trás (offsets negativos).
-     //  uut.banco_regs[2] = 255 * 4; // Aponta para o endereço logo após o fim da memória
+     //  uut.banco_regs[2] = 255 * 4; // Aponta para o endereco logo apos o fim da memoria
       // carrega os 4 valores que você quer ordenar:
       memoria_dados[0] = 32'd167;
       memoria_dados[1] = 32'd165;
@@ -111,7 +111,7 @@ module tb_pipeline;
       memoria_dados[49] = 32'd73;
       // Algoritmo Mergesort para 4 elementos
       // Formato: uut.memoria_instrucoes[index] = 32'b...;
-      // --- Código de Máquina ---
+      // --- Codigo de Máquina ---
       // --- Dados Iniciais (Exemplo) ---
       // main
       uut.memoria_instrucoes[0] = 32'h03200a13; // addi	x20,zero,50 
@@ -203,15 +203,16 @@ module tb_pipeline;
 
 
 
-  // Lógica de Simulação do Atraso da Cache (o "cérebro" do testbench)
+  // Logica de Simulacao do Atraso da Cache (o "cérebro" do testbench)
   always @(posedge clock) begin
     if(!reset)begin
+      //caso ocorra MISS em ambas as caches:
       if(uut.stall_cache_instrucoes && uut.stall_cache_dados)begin
-        $display("Cache de Instruçoes e dados - MISS no PC = %0d. Simulando latencia...", uut.PC);
+        $display("Cache de Instrucoes e dados - MISS no PC = %0d. Simulando latencia...", uut.PC);
         //Espera de 4 ciclos de clock (1 para detectar + 3 de espera)
         repeat (3) @(posedge clock);
         $display("Latencia de 3 ciclos concluida. Preenchendo a cache...");
-        // --- Lógica de preenchimento da CACHE DE INSTRUÇÕES ---
+        // --- Logica de preenchimento da CACHE DE INSTRUcÕES ---
         block_base_addr = {uut.PC[31:4], 4'b0000};
         index0 = block_base_addr >> 2;
         index1 = (block_base_addr + 4) >> 2;
@@ -228,9 +229,9 @@ module tb_pipeline;
         uut.u_cacheInst.instr_cache_tag[cache_index_miss]   <= cache_tag_miss;
         uut.u_cacheInst.instr_cache_valid[cache_index_miss] <= 1'b1;
 
-        $display("Cache de Instruções preenchida para o índice %0d.",cache_index_miss);
+        $display("Cache de Instrucões preenchida para o indice %0d.",cache_index_miss);
 
-        // --- Lógica de preenchimento da CACHE DE DADOS ---
+        // --- Logica de preenchimento da CACHE DE DADOS ---
         block_base_addr = {uut.EXMEM_AluOut[31:4], 4'b0000};
         index0 = block_base_addr >> 2;
         index1 = (block_base_addr + 4) >> 2;
@@ -248,9 +249,9 @@ module tb_pipeline;
         uut.u_cacheDados.data_cache_tag[dado_cache_index]  <= dado_cache_tag;
         uut.u_cacheDados.data_cache_valid[dado_cache_index]<= 1'b1;
 
-        $display("Cache de Dados preenchida para o índice %0d. Pipeline vai continuar.", dado_cache_index);
+        $display("Cache de Dados preenchida para o indice %0d. Pipeline vai continuar.", dado_cache_index);
       end else if (uut.stall_cache_instrucoes) begin
-        $display("Cache de Instruçoes - MISS no PC = %0d. Simulando latencia...", uut.PC);
+        $display("Cache de Instrucoes - MISS no PC = %0d. Simulando latencia...", uut.PC);
         repeat (3) @(posedge clock);
         $display("Latencia de 3 ciclos concluida. Preenchendo a cache...");
         //Preparar os dados para preencher a cache
@@ -282,18 +283,18 @@ module tb_pipeline;
 
         block_base_addr = {uut.EXMEM_AluOut[31:4], 4'b0000};
               
-        // Índices das 4 palavras na memória do TB
+        // indices das 4 palavras na memoria do TB
         index0 = block_base_addr >> 2;
         index1 = (block_base_addr + 4) >> 2;
         index2 = (block_base_addr + 8) >> 2;
         index3 = (block_base_addr + 12) >> 2;
         
-        // Lê o dado da memória
+        // Lê o dado da memoria
         bloco_de_dados = {memoria_dados[index3], memoria_dados[index2], 
                           memoria_dados[index1], memoria_dados[index0]};
 
         endereco_miss = uut.EXMEM_AluOut;
-        // O índice e a tag agora são calculados
+        // O indice e a tag agora sao calculados
         dado_cache_index = endereco_miss[8:4];  // 5 bits
         dado_cache_tag   = endereco_miss[31:9]; // 23 bits
 
@@ -310,18 +311,18 @@ module tb_pipeline;
     end
   end
 
-    // Lógica separada para ESCRITA na memória (Store Word)
+// Logica separada para ESCRITA na memoria (Store Word)
   always @(posedge clock) begin
     if (!reset && uut.EXMEM_MemWrite) begin
-      // SW não para o pipeline, mas o testbench precisa atualizar sua memória
-      $display("Store Word detectado. Escrevendo %0d no endereço %0d da memória.", uut.EXMEM_WriteData, uut.EXMEM_AluOut);
+      // SW nao para o pipeline, mas o testbench precisa atualizar sua memoria
+      $display("Store Word detectado. Escrevendo %0d no endereco %0d da memoria.", uut.EXMEM_WriteData, uut.EXMEM_AluOut);
       memoria_dados[uut.EXMEM_AluOut >> 2] = uut.EXMEM_WriteData;
 
-      // Política de escrita: Invalida a linha correspondente na cache de dados, se houver
-      // Isso evita que o processador leia um dado velho da cache após uma escrita
+      // Politica de escrita: Invalida a linha correspondente na cache de dados, se houver
+      // Isso evita que o processador leia um dado velho da cache apos uma escrita
       dado_cache_index_escrita = uut.EXMEM_AluOut[8:4];
 
-      // Apenas invalida se o endereço bater
+      // Apenas invalida se o endereco bater
       if (uut.u_cacheDados.data_cache_valid[dado_cache_index_escrita] && uut.u_cacheDados.data_cache_tag[dado_cache_index_escrita] == uut.EXMEM_AluOut[31:9]) begin
             uut.u_cacheDados.data_cache_valid[dado_cache_index_escrita] = 1'b0;
             $display("Linha %d da cache de dados invalidada devido a escrita.", dado_cache_index_escrita);
@@ -352,14 +353,14 @@ initial begin
     WB_rd <= uut.MEMWB_rd;
     WB_data <= uut.RegWriteData;
     $display("\n\n=================================== PC: %0d ===================================", uut.PC);
-    // O estado da cache é a informação mais crucial agora
+    // O estado da cache é a informacao mais crucial agora
 
     $display("| HIT CACHE DE INSTRUCAO: %b | STALL CACHE DE INSTRUCAO: %b  ||  HIT CACHE DE DADOS: %b | STALL CACHE DE DADOS: %b |", 
               uut.u_cacheInst.cache_instr_hit, uut.stall_cache_instrucoes, 
               uut.u_cacheDados.cache_data_hit, uut.stall_cache_dados);
     case (uut.IFID_instr[6:0])
         7'b0110011: begin // R-Type
-          // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO IF
+          // <--- INiCIO DA MODIFICAcaO PARA O ESTÁGIO IF
           case (uut.IFID_instr[31:25]) // Checa o funct7
             7'b0000000: begin // funct7 para ADD, SLT, SLTU
               case (uut.IFID_instr[14:12]) // Checa o funct3
@@ -371,7 +372,7 @@ initial begin
             7'b0000001: $display("Instrucao IF  %b  -  MUL x%0d, x%0d, x%0d", uut.IFID_instr, uut.IFID_instr[11:7], uut.IFID_instr[19:15], uut.IFID_instr[24:20]);
             7'b0100000: $display("Instrucao IF  %b  -  SUB x%0d, x%0d, x%0d", uut.IFID_instr, uut.IFID_instr[11:7], uut.IFID_instr[19:15], uut.IFID_instr[24:20]);
           endcase
-          // <--- FIM DA MODIFICAÇÃO PARA O ESTÁGIO IF
+          // <--- FIM DA MODIFICAcaO PARA O ESTÁGIO IF
         end
         7'b0100011:begin
           $display("Instrucao IF  %b  -  SW x%0d, %0d(x%0d)", uut.IFID_instr, uut.IFID_instr[24:20], extended_S_TYPE, uut.IFID_instr[19:15]);
@@ -410,7 +411,7 @@ initial begin
 
     case(uut.IDEX_instr[6:0])
         7'b0110011: begin // R-Type
-          // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO ID
+          // <--- INiCIO DA MODIFICAcaO PARA O ESTÁGIO ID
           case (uut.IDEX_funct7)
             7'b0000000: begin
               case (uut.IDEX_funct3)
@@ -422,7 +423,7 @@ initial begin
             7'b0000001: $display("Instrucao ID  %b  -  MUL x%0d, x%0d, x%0d", uut.IDEX_instr, uut.IDEX_rd, uut.IDEX_indiceR1, uut.IDEX_indiceR2);
             7'b0100000: $display("Instrucao ID  %b  -  SUB x%0d, x%0d, x%0d", uut.IDEX_instr, uut.IDEX_rd, uut.IDEX_indiceR1, uut.IDEX_indiceR2);
           endcase
-          // <--- FIM DA MODIFICAÇÃO PARA O ESTÁGIO ID
+          // <--- FIM DA MODIFICAcaO PARA O ESTÁGIO ID
         end
         7'b0100011:begin
           $display("Instrucao ID  %b  -  SW x%0d, %0d(x%0d)", uut.IDEX_instr, uut.IDEX_indiceR2, uut.IDEX_imm, uut.IDEX_indiceR1);
@@ -459,7 +460,7 @@ initial begin
 
     case(uut.EXMEM_instr[6:0])
         7'b0110011: begin // R-Type
-          // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO EX
+          // <--- INiCIO DA MODIFICAcaO PARA O ESTÁGIO EX
           case (uut.EXMEM_instr[31:25])
             7'b0000000: begin
               case(uut.EXMEM_instr[14:12])
@@ -471,7 +472,7 @@ initial begin
             7'b0000001: $display("Instrucao EX  %b  -  MUL x%0d, x%0d, x%0d", uut.EXMEM_instr, uut.EXMEM_rd, uut.EXMEM_instr[19:15], uut.EXMEM_instr[24:20]);
             7'b0100000: $display("Instrucao EX  %b  -  SUB x%0d, x%0d, x%0d", uut.EXMEM_instr, uut.EXMEM_rd, uut.EXMEM_instr[19:15], uut.EXMEM_instr[24:20]);
           endcase
-          // <--- FIM DA MODIFICAÇÃO PARA O ESTÁGIO EX
+          // <--- FIM DA MODIFICAcaO PARA O ESTÁGIO EX
         end
         7'b0100011:begin
           $display("Instrucao EX  %b  -  SW x%0d, %0d(x%0d)", uut.EXMEM_instr, uut.EXMEM_instr[24:20], EXMEM_imm, uut.EXMEM_instr[19:15]);
@@ -508,7 +509,7 @@ initial begin
 
     case(uut.MEMWB_instr[6:0])
         7'b0110011: begin // R-Type
-          // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO MEM
+          // <--- INiCIO DA MODIFICAcaO PARA O ESTÁGIO MEM
           case (uut.MEMWB_instr[31:25])
             7'b0000000: begin
               case(uut.MEMWB_instr[14:12])
@@ -520,7 +521,7 @@ initial begin
             7'b0000001: $display("Instrucao MEM %b  -  MUL x%0d, x%0d, x%0d", uut.MEMWB_instr, uut.MEMWB_rd, uut.MEMWB_instr[19:15], uut.MEMWB_instr[24:20]);
             7'b0100000: $display("Instrucao MEM %b  -  SUB x%0d, x%0d, x%0d", uut.MEMWB_instr, uut.MEMWB_rd, uut.MEMWB_instr[19:15], uut.MEMWB_instr[24:20]);
           endcase
-          // <--- FIM DA MODIFICAÇÃO PARA O ESTÁGIO MEM
+          // <--- FIM DA MODIFICAcaO PARA O ESTÁGIO MEM
         end
         7'b0100011:begin
           $display("Instrucao MEM %b  -  SW x%0d, %0d(x%0d)", uut.MEMWB_instr, uut.MEMWB_instr[24:20], MEMWB_imm, uut.MEMWB_instr[19:15]);
@@ -557,7 +558,7 @@ initial begin
 
     case(WB_instr[6:0])
         7'b0110011: begin // R-Type
-          // <--- INÍCIO DA MODIFICAÇÃO PARA O ESTÁGIO WB
+          // <--- INiCIO DA MODIFICAcaO PARA O ESTÁGIO WB
           case (WB_instr[31:25])
             7'b0000000: begin
               case(WB_instr[14:12])
@@ -571,7 +572,7 @@ initial begin
             7'b0100000: $display("Instrucao WB  %b  -  SUB x%0d, x%0d, x%0d", WB_instr, WB_rd, WB_instr[19:15], WB_instr[24:20]);
             default: $display("Instrucao WB  %b  -  R-Type Desconhecido", WB_instr);
           endcase
-          // <--- FIM DA MODIFICAÇÃO PARA O ESTÁGIO WB
+          // <--- FIM DA MODIFICAcaO PARA O ESTÁGIO WB
         end
         7'b0100011:begin
           $display("Instrucao WB  %b  -  SW x%0d, %0d(x%0d)", WB_instr, WB_instr[24:20], WB_imm, WB_instr[19:15]);

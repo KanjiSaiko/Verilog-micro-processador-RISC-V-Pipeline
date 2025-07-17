@@ -21,10 +21,10 @@ ModelSim:
 ## 🧪 Testbench e Dados de Entrada
 O arquivo tb_pipeline.v carrega valores iniciais na memória de dados usando o módulo test_data.v  
 Exemplo:  
-  uut.data_mem[0] = 32'd49;  
-  uut.data_mem[1] = 32'd17;  
-  uut.data_mem[2] = 32'd93;  
-  uut.data_mem[3] = 32'd58;  
+  memoria_dados[0] = 32'd49;  
+  memoria_dados[1] = 32'd17;  
+  memoria_dados[2] = 32'd93;  
+  memoria_dados[3] = 32'd58;  
   //... até N elementos  
   O código do Mergesort está carregado em instr_mem a partir do endereço 0.
 
